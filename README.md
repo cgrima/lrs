@@ -10,7 +10,7 @@ The hierarchy of the working directory is assumed to be
 ./code/
     lrs/ # This repository
 ./data/
-    orig/
+    orig/ # Original LRS products provided by JAXA
         sln-l-lrs-5-sndr-ss-sar05-power-v1.0/
         sln-l-lrs-5-sndr-ss-sar10-power-v1.0/
         [...]
