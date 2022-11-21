@@ -1,10 +1,6 @@
 # LRS
 Tools for manipulating Lunar Radar Sounder (LRS) data from the JAXA's Kaguya 
-spacecraft
-
-[](https://darts.isas.jaxa.jp/planet/pdap/selene/index.html.en)
-[](https://ode.rsl.wustl.edu/MArs/pagehelp/Content/Missions_Instruments/
-KAGUYA%20(SELENE)/LRS/Derived_Data.htm)
+spacecraft. Data available at [JAXA's Data ARchives and Transmission System (DARTS) ](https://darts.isas.jaxa.jp/planet/pdap/selene/index.html.en).
 
 ## Working Directory
 
