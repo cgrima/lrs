@@ -47,7 +47,7 @@ class Env:
                     if name not in self.files[product].keys():
                         self.files[product][name] = {}
                         files = glob.glob(product_path + day + '/data/*' 
-                        + name + '*.*')
+                                          + name + '*.*')
                         self.files[product][name] = files
 
     def read_labels(self):
@@ -80,6 +80,7 @@ class Env:
                 'STOP_SUB_SPACECRAFT_LONGITUDE')
                 self.lon_lim[product][name] = [lim1, lim2]
                 
+    def tracks_within_latlon_box(lat_lim, lon_lim, sampling=10e3):
         
         
 

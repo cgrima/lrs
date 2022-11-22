@@ -4,7 +4,7 @@
 __version__ = ""
 __author__ = "Cyril Grima"
 
-__all__ = ["Classdef", "read"]
+__all__ = ["Classdef", "read", "tools"]
 
-from . import Classdef, read
+from . import Classdef, read, tools
 
