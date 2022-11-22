@@ -51,7 +51,7 @@ class Env:
                         self.files[product][name] = files
 
     def read_labels(self):
-        """
+        """ Read and store in the Class some parameters from the label files
         """
         for product in self.files.keys():
             self.clock_lim[product] = {}
@@ -81,7 +81,23 @@ class Env:
                 self.lon_lim[product][name] = [lim1, lim2]
                 
     def tracks_within_latlon_box(lat_lim, lon_lim, sampling=10e3):
+        """ Return identifiers of tracks crossing a box bounded by latitudes
+        and longitudes
         
+        ARGUMENTS
+        ---------   
+        lat_lim: [float, float]
+            Latitude of first and last points
+        lon_lim: [float, float]
+            Longitude of first and last points
+        sampling: integer
+            space between points [m]
+    
+        RETURN
+        ------
+        tuple{'lats', 'lons'}
+        """
+        pass
         
 
 if __name__ == "__main__":
