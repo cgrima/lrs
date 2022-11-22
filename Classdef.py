@@ -13,7 +13,7 @@ import glob
 import logging
 import numpy as np
 import pandas as pd
-from . import read
+from . import read, tools
 
 class Env:
     """ Class for interacting with data files in the dataset
@@ -35,9 +35,9 @@ class Env:
     def index_files(self):
         """ Index all data files 
         """
-        products = os.listdir(self.orig_path)
+        self.products = os.listdir(self.orig_path)
         # Feel free to append other products no in orig_path
-        for product in products:
+        for product in self.products:
             self.files[product] = {}
             product_path = self.orig_path + product + '/'
             for day in os.listdir(product_path):
@@ -80,24 +80,32 @@ class Env:
                 'STOP_SUB_SPACECRAFT_LONGITUDE')
                 self.lon_lim[product][name] = [lim1, lim2]
                 
-    def tracks_within_latlon_box(lat_lim, lon_lim, sampling=10e3):
+    def tracks_intersecting_latlon_box(self, boxlats, boxlons, sampling=10e3):
         """ Return identifiers of tracks crossing a box bounded by latitudes
-        and longitudes
+        and longitudes. Uses great circle interpolation between between end 
+        points of each tracks.
         
         ARGUMENTS
         ---------   
-        lat_lim: [float, float]
-            Latitude of first and last points
-        lon_lim: [float, float]
-            Longitude of first and last points
+        boxlats: [float, float]
+            Box first and last longitudes
+        boxlons: [float, float]
+            Box first and last longitudes
         sampling: integer
-            space between points [m]
+            space between points interpolated between tracks end points [m]
     
         RETURN
         ------
         tuple{'lats', 'lons'}
         """
-        pass
+        products = self.products
+        for product in products:
+            for track in self.files[product].keys():
+                coord = tools.intermediate_latlon(self.lat_lim[product][track],
+                                                  self.lon_lim[product][track],
+                                                  sampling=sampling)
+                # Test if a point is within the latlon box
+        
         
 
 if __name__ == "__main__":
