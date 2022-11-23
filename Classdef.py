@@ -13,6 +13,7 @@ import glob
 import logging
 import numpy as np
 import pandas as pd
+from shapely.geometry import Point, Polygon
 from . import read, tools
 
 class Env:
@@ -80,7 +81,8 @@ class Env:
                 'STOP_SUB_SPACECRAFT_LONGITUDE')
                 self.lon_lim[product][name] = [lim1, lim2]
                 
-    def tracks_intersecting_latlon_box(self, boxlats, boxlons, sampling=10e3):
+    def tracks_intersecting_latlon_box(self, boxlats, boxlons, sampling=10e3,
+                                       download=False):
         """ Return identifiers of tracks crossing a box bounded by latitudes
         and longitudes. Uses great circle interpolation between between end 
         points of each tracks.
@@ -98,13 +100,29 @@ class Env:
         ------
         tuple{'lats', 'lons'}
         """
+        # Create a square
+        box = [(boxlons[0], boxlats[0]), 
+               (boxlons[0], boxlats[1]), 
+               (boxlons[1], boxlats[1]), 
+               (boxlons[1], boxlats[0])
+               ]
+        poly = Polygon(box)
+
         products = self.products
+        out = []
         for product in products:
             for track in self.files[product].keys():
                 coord = tools.intermediate_latlon(self.lat_lim[product][track],
                                                   self.lon_lim[product][track],
                                                   sampling=sampling)
                 # Test if a point is within the latlon box
+                inbox = [Point(coord['lons'][j], coord['lats'][j]).within(poly) 
+                         for j in np.arange(len(coord['lats']))]
+                if True in inbox:
+                    out = out + [[product, track]]
+            
+        
+        return out
         
         
 
