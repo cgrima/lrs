@@ -27,7 +27,7 @@ def intermediate_latlon(lat_lim, lon_lim, sampling=10e3):
     r = g.fwd_intermediate(lon_lim[0], lat_lim[0], az12, npts=npts, del_s=del_s)
 
     # Output structure
-    lon360s = [lon + 360 for lon in r.lons if lon < 0]
+    lon360s = [lon + 360 if lon < 0 else lon for lon in r.lons]
     lats = [lat for lat in r.lats]
     #latlons = [[r.lats[i], lon360s[i]] for i in np.arange(r.npts)]
 
