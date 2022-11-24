@@ -120,7 +120,21 @@ class Env:
                          for j in np.arange(len(coord['lats']))]
                 if True in inbox:
                     out = out + [[product, track]]
-            
+                    
+        if download:
+            for track in out:
+                product = track[0]
+                name = track[1]
+                print(f'Downloading {track}')
+                
+                mkdir_cmd = f'mkdir -p {self.orig_path}{product}/{name[0:8]}'
+                os.system(mkdir_cmd)
+                
+                lftp_cmd = f'lftp -c "open https://data.darts.isas.jaxa.jp/pub/pds3/{product}/{name[0:8]}/;' \
+                + f'mirror -c -P 10 --only-missing -I \'*{name}*\' ' \
+                + f'data {self.orig_path}{product}/{name[0:8]}/" '
+
+                os.system(lftp_cmd)
         
         return out
         
