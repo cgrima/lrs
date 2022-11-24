@@ -36,7 +36,7 @@ cd data/orig
 lftp -c "open https://data.darts.isas.jaxa.jp/pub/pds3; mirror -c -P 10 --only-missing -I 'LRS_SAR05KM_20071221093226*' sln-l-lrs-5-sndr-ss-sar05-power-v1.0/"
 ```
 
-### Basic Data Info from Label Files
+## Basic Data Info from Label Files
 
 Create an instance that will hold basic information about the LRS dataset.
 By default, any python command is assumed to be launched from within
@@ -47,7 +47,7 @@ the `./code` directory. If note, please change the keyword `root_path`.
 LRS = lrs.Classdef.Env(root_path='../')
 ```
 
-Basic request from data within the label files:
+Basic requests from data within the label files:
 
 ```bash
 # Get available file names
@@ -61,4 +61,12 @@ LRS.lat_lim['sln-l-lrs-5-sndr-ss-sar40-power-v1.0']['20071219231328']
 # Get start and stop spacecraft clock time
 LRS.clock_lim['sln-l-lrs-5-sndr-ss-sar40-power-v1.0']['20071219231328']
 >> [882141206, 882143419]
+```
+
+## Geographic Query
+
+To search for tracks crossing a box bounded by longitude and latitudes (below example over Schrodinger crater):
+
+```bash
+tracks = LRS.tracks_intersecting_latlon_box([-80, -70], [110, 155], sampling=100e3)
 ```

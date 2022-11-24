@@ -95,6 +95,9 @@ class Env:
             Box first and last longitudes
         sampling: integer
             space between points interpolated between tracks end points [m]
+        download: binary
+            Whether to download the corresponding files into the local 
+            hierarchy
     
         RETURN
         ------
