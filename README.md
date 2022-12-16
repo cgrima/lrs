@@ -63,6 +63,26 @@ LRS.clock_lim['sln-l-lrs-5-sndr-ss-sar40-power-v1.0']['20071219231328']
 >> [882141206, 882143419]
 ```
 
+## Original Data
+
+To load data from an original track in a friendly format:
+
+```bash
+# Load original data
+data = LRS.orig_data['sln-l-lrs-5-sndr-ss-sar05-power-v1.0']['20071221033918']
+
+# The function above also accepts any matching substrings for the product, e.g.
+data = LRS.orig_data['sar05']['20071221033918']
+
+# Display keys contained in the data
+data.keys()
+>> dict_keys(['OBSERVATION_TIME', 'DELAY', 'START_STEP', 'SUB_SPACECRAFT_LATITUDE', 'SUB_SPACECRAFT_LONGITUDE', 'SPACECRAFT_ALTITUDE', 'DISTANCE_TO_RANGE0', 'TI', 'IMG'])
+```
+
+## Surface Echo
+
+TODO
+
 ## Geographic Query
 
 To search for tracks crossing a box bounded by longitude and latitudes (below example over Schrodinger crater):

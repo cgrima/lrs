@@ -81,6 +81,51 @@ class Env:
                 'STOP_SUB_SPACECRAFT_LONGITUDE')
                 self.lon_lim[product][name] = [lim1, lim2]
                 
+    def product_match(self, product):
+        """ Return the full name of a product from a substring
+        
+        ARGUMENTS
+        ---------
+        product: string
+            Substring of the product
+        
+        RETURN
+        ------
+        string
+        """
+        res = [i for i in self.products if product in i]
+        
+        if len(res) > 1:
+            print('Several products match this substring:')
+            for i in res:
+                print('  ' + i)
+        else:
+            return res[0]
+                
+    def orig_data(self, product, name):
+        """ Read orig data
+        
+        ARGUMENT
+        --------
+        product: string
+            product full name or substring (e.g., sar05)
+        name: string
+            file identifier (e.g., '20071221033918')
+            
+        RETURN
+        ------
+        
+        """
+        product = self.product_match(product)
+        files = self.files[product][name]
+        lbl_filename = [file for file in files if '.lbl' in file][0]
+        img_filename = [file for file in files if '.img' in file][0]
+        aux, img = read.img(img_filename, lbl_filename)
+        out = aux.to_dict(orient='list')
+        out.update({'IMG':img})
+        
+        return out#.update({'DATA':img})
+
     def tracks_intersecting_latlon_box(self, boxlats, boxlons, sampling=10e3,
                                        download=False):
         """ Return identifiers of tracks crossing a box bounded by latitudes
@@ -146,7 +191,7 @@ class Env:
 if __name__ == "__main__":
     # execute only if run as a script
     main()
-        
+
         
 def main():
     """ Test Env
