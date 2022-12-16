@@ -10,10 +10,11 @@ The hierarchy of the working directory is assumed to be
 ./code/
     lrs/ # This repository
 ./data/
-    orig/ # Original LRS products provided by JAXA
-        sln-l-lrs-5-sndr-ss-sar05-power-v1.0/
-        sln-l-lrs-5-sndr-ss-sar10-power-v1.0/
-        [...]
+    lrs/
+        orig/ # Original LRS products provided by JAXA
+            sln-l-lrs-5-sndr-ss-sar05-power-v1.0/
+            sln-l-lrs-5-sndr-ss-sar10-power-v1.0/
+            [...]
 ./[...]
 ```
 
@@ -36,7 +37,7 @@ cd data/orig
 lftp -c "open https://data.darts.isas.jaxa.jp/pub/pds3; mirror -c -P 10 --only-missing -I 'LRS_SAR05KM_20071221093226*' sln-l-lrs-5-sndr-ss-sar05-power-v1.0/"
 ```
 
-## Basic Data Info from Label Files
+## Initialisation
 
 Create an instance that will hold basic information about the LRS dataset.
 By default, any python command is assumed to be launched from within
@@ -46,6 +47,9 @@ the `./code` directory. If note, please change the keyword `root_path`.
 # Initiate instance
 LRS = lrs.Classdef.Env(root_path='../')
 ```
+
+
+## Basic Data Info from Label Files
 
 Basic requests from data within the label files:
 
@@ -65,7 +69,7 @@ LRS.clock_lim['sln-l-lrs-5-sndr-ss-sar40-power-v1.0']['20071219231328']
 
 ## Original Data
 
-To load data from an original track in a friendly format:
+To load original data from a track in a friendly format:
 
 ```bash
 # Load original data
@@ -79,9 +83,11 @@ data.keys()
 >> dict_keys(['OBSERVATION_TIME', 'DELAY', 'START_STEP', 'SUB_SPACECRAFT_LATITUDE', 'SUB_SPACECRAFT_LONGITUDE', 'SPACECRAFT_ALTITUDE', 'DISTANCE_TO_RANGE0', 'TI', 'IMG'])
 ```
 
+
 ## Surface Echo
 
 TODO
+
 
 ## Geographic Query
 

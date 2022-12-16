@@ -25,7 +25,8 @@ class Env:
         self.root_path = root_path
         self.data_path = root_path + 'data/'
         self.code_path = root_path + 'code/'
-        self.orig_path = self.data_path + 'orig/'
+        self.orig_path = self.data_path + 'lrs/orig/'
+        self.xtra_path = self.data_path + 'lrs/xtra/'
         self.files = {}
         self.clock_lim = {}
         self.lat_lim = {}
