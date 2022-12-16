@@ -37,8 +37,10 @@ class Env:
     def index_files(self):
         """ Index all data files 
         """
-        self.products = os.listdir(self.orig_path)
-        # Feel free to append other products no in orig_path
+        self.orig_products = os.listdir(self.orig_path)
+        self.xtra_products = os.listdir(self.xtra_path)
+        self.products = self.orig_products
+        # Feel free to append other products not in orig_path
         for product in self.products:
             self.files[product] = {}
             product_path = self.orig_path + product + '/'
@@ -94,7 +96,7 @@ class Env:
         ------
         string
         """
-        res = [i for i in self.products if product in i]
+        res = [i for i in self.orig_products if product in i]
         
         if len(res) > 1:
             print('Several products match this substring:')
@@ -157,7 +159,7 @@ class Env:
                ]
         poly = Polygon(box)
 
-        products = self.products
+        products = self.orig_products
         out = []
         for product in products:
             for track in self.files[product].keys():
