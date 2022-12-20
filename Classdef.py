@@ -56,6 +56,8 @@ class Env:
                         files = glob.glob(product_path + day + '/data/*' 
                                           + name + '*.*')
                         self.files[product][name] = files
+            logging.info(' ' + product + ' has ' + str(len(self.files[product])) 
+                         + ' tracks')
 
     def read_labels(self):
         """ Read and store in the Class some parameters from the label files
@@ -244,7 +246,7 @@ class Env:
             if not glob.glob(archive_fullname) or delete:
                 os.makedirs(archive_path, exist_ok=True)
                 result.to_csv(archive_fullname, header=True)
-                print(archive_fullname)
+                logging.info(' ' + archive_fullname + ' CREATED')
         
         return result
         

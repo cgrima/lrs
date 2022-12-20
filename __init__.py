@@ -8,3 +8,5 @@ __all__ = ["Classdef", "read", "tools", "run"]
 
 from . import Classdef, read, tools, run
 
+import logging
+
