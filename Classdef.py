@@ -34,7 +34,7 @@ class Env:
         self.lon_lim = {}
         self.products = self.index_products()
         self.index_files()
-        self.read_labels()
+        #self.read_labels()
         
     def index_products(self, path=False):
         """List available products
@@ -42,23 +42,47 @@ class Env:
         out = os.listdir(self.orig_path)
         return out
         
+    def product_match(self, product):
+        """ Return the full name of a product from a substring
+        
+        ARGUMENTS
+        ---------
+        product: string
+            Substring of the product
+        
+        RETURN
+        ------
+        string
+        """
+        res = [i for i in self.products if product in i]
+        
+        if len(res) > 1:
+            logging.warning('Several products match this substring:')
+            for i in res:
+                print(i)
+        else:
+            return res[0]
+        
     def index_files(self):
         """ Index all data files 
         """
         for product in self.products:
+            index_paths = [os.path.join(self.orig_path, product),
+                           os.path.join(self.xtra_path, 'aux', product),]
             self.files[product] = {}
-            product_path = self.orig_path + product + '/'
-            for day in os.listdir(product_path):
-                filenames = glob.glob(product_path + day + '/data/*.*')
-                for filename in filenames:
-                    name = filename.split('_')[-1].split('.')[0]
-                    if name not in self.files[product].keys():
-                        self.files[product][name] = {}
-                        files = glob.glob(product_path + day + '/data/*' 
-                                          + name + '*.*')
-                        self.files[product][name] = files
-            logging.info(' ' + product + ' has ' + str(len(self.files[product])) 
-                         + ' tracks')
+            for path in index_paths:
+                for day in os.listdir(path):
+                    filenames = glob.glob(path + '/' + day + '/data/*.*')
+                    for filename in filenames:
+                        name = filename.split('KM_')[-1][:14]
+                        if name not in self.files[product].keys():
+                            self.files[product][name] = {}
+                            self.files[product][name] = [filename]
+                        else:
+                            self.files[product][name].append(filename)
+
+            logging.info(' ' + product + ' has ' + 
+                         str(len(self.files[product])) + ' tracks')
 
     def read_labels(self):
         """ Read and store in the Class some parameters from the label files
@@ -90,26 +114,6 @@ class Env:
                 'STOP_SUB_SPACECRAFT_LONGITUDE')
                 self.lon_lim[product][name] = [lim1, lim2]
                 
-    def product_match(self, product):
-        """ Return the full name of a product from a substring
-        
-        ARGUMENTS
-        ---------
-        product: string
-            Substring of the product
-        
-        RETURN
-        ------
-        string
-        """
-        res = [i for i in self.products if product in i]
-        
-        if len(res) > 1:
-            logging.warning('Several products match this substring:')
-            for i in res:
-                print(i)
-        else:
-            return res[0]
                 
     def orig_data(self, product, name):
         """ Read orig data

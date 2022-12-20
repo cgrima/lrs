@@ -31,9 +31,9 @@ The hierarchy of the working directory is assumed to be
 
 ## Data Download
 
-To download data from a given processing mode (e.g. `sln-l-lrs-5-sndr-ss-sar05-
-power-v1.0`), but without `*.img` and `*.jpg` files to download the data
-hierarchy without the largest files (`man lftp` for additional options):
+To download data from a given processing mode (e.g. 
+`sln-l-lrs-5-sndr-ss-sar05-power-v1.0`), but without `*.img` and `*.jpg` files
+to download the data hierarchy without the largest files (`man lftp` for additional options):
 
 ```bash
 cd data/orig
