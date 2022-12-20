@@ -237,18 +237,22 @@ class Env:
         # RUN PROCESS
         #------------
         
-        result = getattr(run, process)(data, **kwargs)
-        
+        try:
+            result = getattr(run, process)(data, **kwargs)
+        except:
+            result = []
+        else:
+            
         # ARCHIVE
         #--------
         
-        if archive:
-            if not glob.glob(archive_fullname) or delete:
-                os.makedirs(archive_path, exist_ok=True)
-                result.to_csv(archive_fullname, header=True)
-                logging.info(' ' + archive_fullname + ' CREATED')
+            if archive:
+                if not glob.glob(archive_fullname) or delete:
+                    os.makedirs(archive_path, exist_ok=True)
+                    result.to_csv(archive_fullname, header=True, index=False)
+                    logging.info(' ' + archive_fullname + ' CREATED')
         
-        return result
+            return result
         
         
     def run_all(self, process, product, delete=False, **kwargs):
