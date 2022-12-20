@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 from shapely.geometry import Point, Polygon
 from joblib import Parallel, delayed
+import matplotlib.pyplot as plt
 from . import read, tools, processing
 
 class Env:
@@ -67,8 +68,10 @@ class Env:
         """ Index all data files 
         """
         for product in self.products:
+            # Indicate below what folders need to be indexed
             index_paths = [os.path.join(self.orig_path, product),
                            os.path.join(self.xtra_path, 'aux', product),]
+            
             self.files[product] = {}
             for path in index_paths:
                 for day in os.listdir(path):
@@ -276,6 +279,61 @@ class Env:
                      archive=True, delete=delete, **kwargs)
 
             
+    def plt_rdg(self, product, name, latlim=[-80, -70], ax=None, ylim=None,
+                title=None, **kwargs):
+        """ Plot a LRS radargram
+        
+        ARGUMENTS
+        ---------
+        product: string
+            product full name or substring (e.g., sar05)
+        name: string
+            file identifier (e.g., '20071221033918')
+        latlim: [float, float]
+            latitude boundary
+        ax: ax Object
+            ax within which the radargram will be plotted
+        ylim: [float, float]
+            y limits of the plot
+        title: string
+            Title of the plot
+        **kwargs: tuple
+            kwargs of matplotlib imshow
+        
+        RETURN
+        ------
+        Radargram array
+        
+        """
+        # Data
+        # ----
+    
+        aux = self.run('aux', product, name)
+        xlim = np.sort((np.where(aux['latitude'] <= latlim[0])[0][0], 
+                        np.where(aux['latitude'] <= latlim[1])[0][0]))
+        img = self.orig_data(product, name)['IMG'][:,xlim[0]:xlim[1]]
+    
+    
+        # Plot
+        # ----
+    
+        if not ax:
+            fig, ax = plt.subplots(figsize=(16,5))
+        
+        ax.imshow(img, **kwargs)
+        
+        lat1 = aux['latitude'][xlim[0]]
+        lat2 = aux['latitude'][xlim[1]]
+        
+        if ylim:
+            ax.set_ylim(ylim)    
+        if not title:
+            title = f'{product} - {name} ({lat1:.2f} to {lat2:.2f} latitude)' 
+        ax.set_title(title, fontsize=15)
+    
+        return img
+
+
 if __name__ == "__main__":
     # execute only if run as a script
     main()
