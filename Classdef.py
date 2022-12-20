@@ -104,9 +104,9 @@ class Env:
         res = [i for i in self.products if product in i]
         
         if len(res) > 1:
-            print('Several products match this substring:')
+            logging.warning('Several products match this substring:')
             for i in res:
-                print('  ' + i)
+                print(i)
         else:
             return res[0]
                 
@@ -130,7 +130,7 @@ class Env:
             lbl_filename = [file for file in files if '.lbl' in file][0]
             img_filename = [file for file in files if '.img' in file][0]
         except IndexError:
-            print('No orig data for ' + product + ' ' + name)
+            logging.warning('No orig data for ' + product + ' ' + name)
         else:
             aux, img = read.img(img_filename, lbl_filename)
             out = aux.to_dict(orient='list')
@@ -258,7 +258,7 @@ class Env:
         names = self.files[product].keys()
         
         for name in names:
-            self.run(process, product, name, 
+            _ = self.run(process, product, name, 
                      archive=True, delete=delete, **kwargs)
 
             
