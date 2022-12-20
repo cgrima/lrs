@@ -14,7 +14,7 @@ import logging
 import numpy as np
 import pandas as pd
 from shapely.geometry import Point, Polygon
-from . import read, tools
+from . import read, tools, run
 
 class Env:
     """ Class for interacting with data files in the dataset
@@ -25,22 +25,25 @@ class Env:
         self.root_path = root_path
         self.data_path = root_path + 'data/'
         self.code_path = root_path + 'code/'
-        self.orig_path = self.data_path + 'lrs/orig/'
-        self.xtra_path = self.data_path + 'lrs/xtra/'
+        self.orig_path = self.data_path + 'orig/lrs/'
+        self.xtra_path = self.data_path + 'xtra/lrs/'
         self.files = {}
         self.clock_lim = {}
         self.lat_lim = {}
         self.lon_lim = {}
+        self.products = self.index_products()
         self.index_files()
         self.read_labels()
+        
+    def index_products(self, path=False):
+        """List available products
+        """
+        out = os.listdir(self.orig_path)
+        return out
         
     def index_files(self):
         """ Index all data files 
         """
-        self.orig_products = os.listdir(self.orig_path)
-        self.xtra_products = os.listdir(self.xtra_path)
-        self.products = self.orig_products
-        # Feel free to append other products not in orig_path
         for product in self.products:
             self.files[product] = {}
             product_path = self.orig_path + product + '/'
@@ -96,7 +99,7 @@ class Env:
         ------
         string
         """
-        res = [i for i in self.orig_products if product in i]
+        res = [i for i in self.products if product in i]
         
         if len(res) > 1:
             print('Several products match this substring:')
@@ -121,13 +124,16 @@ class Env:
         """
         product = self.product_match(product)
         files = self.files[product][name]
-        lbl_filename = [file for file in files if '.lbl' in file][0]
-        img_filename = [file for file in files if '.img' in file][0]
-        aux, img = read.img(img_filename, lbl_filename)
-        out = aux.to_dict(orient='list')
-        out.update({'IMG':img})
-        
-        return out#.update({'DATA':img})
+        try:
+            lbl_filename = [file for file in files if '.lbl' in file][0]
+            img_filename = [file for file in files if '.img' in file][0]
+        except IndexError:
+            print('No orig data for ' + product + ' ' + name)
+        else:
+            aux, img = read.img(img_filename, lbl_filename)
+            out = aux.to_dict(orient='list')
+            out.update({'IMG':img})
+            return out#.update({'DATA':img})
 
     def tracks_intersecting_latlon_box(self, boxlats, boxlons, sampling=10e3,
                                        download=False):
@@ -150,6 +156,7 @@ class Env:
         RETURN
         ------
         tuple{'lats', 'lons'}
+        
         """
         # Create a square
         box = [(boxlons[0], boxlats[0]), 
@@ -190,7 +197,69 @@ class Env:
         return out
         
         
+    def run(self, process, product, name, archive=False, delete=False, **kwargs):
+        """ Run a process
+        
+        ARGUMENT
+        --------
+        process: string
+            name of the process, usually maps to functions in run.py
+        product: string
+            product full name or substring (e.g., sar05)
+        name: string
+            file identifier (e.g., '20071221033918')
+        archive: bit
+            whether to archive
+        delete: bit
+            Force archive if file already exist
+            
+        RETURN
+        ------
+        results
+        
+        """
+        product = self.product_match(product)
+        
+        # ARCHIVE NAME
+        # ------------
+        
+        if process == 'aux':
+            data = self.orig_data(product, name)
+            archive_path = self.xtra_path + '/'.join([process, product, 
+                                                     name[:8] ,'data'])
+            suffix = '_orig.txt'
+            filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
+            
+            archive_fullname = '/'.join([archive_path, filename])
+        
+        # RUN PROCESS
+        #------------
+        
+        result = getattr(run, process)(data, **kwargs)
+        
+        # ARCHIVE
+        #--------
+        
+        if archive:
+            if not glob.glob(archive_fullname) or delete:
+                os.makedirs(archive_path, exist_ok=True)
+                result.to_csv(archive_fullname, header=True)
+                print(archive_fullname)
+        
+        return result
+        
+        
+    def run_all(self, process, product, delete=False, **kwargs):
+        """ Run a process on all tracks/names within a product
+        """
+        product = self.product_match(product)
+        names = self.files[product].keys()
+        
+        for name in names:
+            self.run(process, product, name, 
+                     archive=True, delete=delete, **kwargs)
 
+            
 if __name__ == "__main__":
     # execute only if run as a script
     main()

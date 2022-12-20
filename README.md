@@ -10,11 +10,22 @@ The hierarchy of the working directory is assumed to be
 ./code/
     lrs/ # This repository
 ./data/
-    lrs/
-        orig/ # Original LRS products provided by JAXA
+    orig/ # Original products
+        lrs/ # LRS products provided by JAXA
             sln-l-lrs-5-sndr-ss-sar05-power-v1.0/
             sln-l-lrs-5-sndr-ss-sar10-power-v1.0/
             [...]
+    xtra/ # Derived products that follow the orig hierarchy
+        lrs/
+            aux/ # Auxilliary data derived from orig 
+                sln-l-lrs-5-sndr-ss-sar05-power-v1.0/
+                sln-l-lrs-5-sndr-ss-sar10-power-v1.0/
+            srf/ # Surface data derived from orig 
+                sln-l-lrs-5-sndr-ss-sar05-power-v1.0/
+                sln-l-lrs-5-sndr-ss-sar10-power-v1.0/
+            [...]
+    gis/ # Some GIS-ready data
+        lrs/
 ./[...]
 ```
 
@@ -67,7 +78,7 @@ LRS.clock_lim['sln-l-lrs-5-sndr-ss-sar40-power-v1.0']['20071219231328']
 >> [882141206, 882143419]
 ```
 
-## Original Data
+## Load Original Data
 
 To load original data from a track in a friendly format:
 
@@ -83,15 +94,27 @@ data.keys()
 >> dict_keys(['OBSERVATION_TIME', 'DELAY', 'START_STEP', 'SUB_SPACECRAFT_LATITUDE', 'SUB_SPACECRAFT_LONGITUDE', 'SPACECRAFT_ALTITUDE', 'DISTANCE_TO_RANGE0', 'TI', 'IMG'])
 ```
 
+## Run processings
 
-## Surface Echo
+The `./data/lrs/xtra/` folder will store derived data product with the same hierarchy as in the `orig` directory. 
+
+### Auxiliary Data
+
+To extract and archive auxiliary data from the header of the LRS orig files
+```bash
+_ = LRS.run('aux', 'sar05', '20071221033918', archive=True, delete=True)
+```
+
+### Surface Echo
 
 TODO
 
 
 ## Geographic Query
 
-To search for tracks crossing a box bounded by longitude and latitudes (below example over Schrodinger crater):
+### From Orig Labels
+
+This function uses the min and max coordinates in the label files of the original LRS data. It is approximate but fast. Below an example to search for tracks crossing a box bounded by longitude and latitudes (over Schrodinger crater):
 
 ```bash
 tracks = LRS.tracks_intersecting_latlon_box([-80, -70], [110, 155], sampling=100e3)
