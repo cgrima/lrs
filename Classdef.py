@@ -14,6 +14,7 @@ import logging
 import numpy as np
 import pandas as pd
 from shapely.geometry import Point, Polygon
+from joblib import Parallel, delayed
 from . import read, tools, processing
 
 class Env:
@@ -255,11 +256,16 @@ class Env:
             return result
         
         
-    def run_all(self, process, product, delete=False, **kwargs):
+    def run_all(self, process, product, delete=False, 
+                n_jobs=4, verbose=6, **kwargs):
         """ Run a process on all tracks/names within a product
         """
         product = self.product_match(product)
         names = self.files[product].keys()
+        
+        results = Parallel(n_jobs=n_jobs, verbose=verbose)(
+            delayed(self.run)(process, product, name, {'delete':delete, **kwargs}) 
+            for name in names)
         
         for name in names:
             _ = self.run(process, product, name, 
