@@ -111,10 +111,10 @@ TODO
 
 ### Batch processing
 
-To run a processing on all the available data:
+To run a processing on all the available data using 8 cores in parallel:
 
 ```bash
-LRS.run_all('aux', 'sar05', delete=False)
+LRS.run_all('aux', 'sar05', delete=False, n_jobs=8)
 ```
 
 ## Geographic Query
