@@ -109,6 +109,13 @@ _ = LRS.run('aux', 'sar05', '20071221033918', archive=True, delete=True)
 
 TODO
 
+### Batch processing
+
+To run a processing on all the available data:
+
+```bash
+LRS.run_all('aux', 'sar05', delete=False)
+```
 
 ## Geographic Query
 
