@@ -94,6 +94,19 @@ data.keys()
 >> dict_keys(['OBSERVATION_TIME', 'DELAY', 'START_STEP', 'SUB_SPACECRAFT_LATITUDE', 'SUB_SPACECRAFT_LONGITUDE', 'SPACECRAFT_ALTITUDE', 'DISTANCE_TO_RANGE0', 'TI', 'IMG'])
 ```
 
+## Plot a radargram
+
+The repository provides a limited function to plot a radargram:
+
+```bash
+product = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0'
+name = '20071221033918'
+
+img = LRS.plt_rdg(product, name, latlim=[-80, -70], cmap='gray', vmin=0, vmax=100)
+```
+![Plot](./plt_rdg.png?raw=true)
+
+
 ## Run processings
 
 The `./data/lrs/xtra/` folder will store derived data product with the same hierarchy as in the `orig` directory. 
