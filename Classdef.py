@@ -143,8 +143,39 @@ class Env:
             aux, img = read.img(img_filename, lbl_filename)
             out = aux.to_dict(orient='list')
             out.update({'IMG':img})
+            out.update({'IMG_pdb':self.signalconversion(product, name, img)})
             return out#.update({'DATA':img})
 
+        
+    def aux_data(self, product, name):
+        """ Read aux data. It concatenates all columns from the files
+            in the aux folder 
+        
+        ARGUMENT
+        --------
+        product: string
+            product full name or substring (e.g., sar05)
+        name: string
+            file identifier (e.g., '20071221033918')
+            
+        RETURN
+        ------
+        
+        """
+        product = self.product_match(product)
+        files = self.files[product][name]
+        aux_filenames = [file for file in files if '/aux/' in file]
+        
+        if aux_filenames:
+            out = pd.DataFrame()
+            for aux_filename in aux_filenames:
+                df = pd.read_csv(aux_filename)
+                out = pd.concat([out, df], axis=1)
+            return out.to_dict(orient='list')
+        else:
+            logging.warning('No aux data for ' + product + ' ' + name)
+   
+        
     def tracks_intersecting_latlon_box(self, boxlats, boxlons, sampling=10e3,
                                        download=False):
         """ Return identifiers of tracks crossing a box bounded by latitudes
@@ -279,7 +310,7 @@ class Env:
                      archive=True, delete=delete, **kwargs)
 
             
-    def plt_rdg(self, product, name, latlim=[-80, -70], ax=None, ylim=None,
+    def plt_rdg(self, product, name, ax=None, latlim=None,
                 title=None, **kwargs):
         """ Plot a LRS radargram
         
@@ -302,17 +333,29 @@ class Env:
         
         RETURN
         ------
-        Radargram array
+        rdg: array
+            Radargram
+        idx: Binary vector
+            valid x bin
         
         """
         # Data
         # ----
     
-        aux = self.run('aux', product, name)
-        xlim = np.sort((np.where(aux['latitude'] <= latlim[0])[0][0], 
-                        np.where(aux['latitude'] <= latlim[1])[0][0]))
-        img = self.orig_data(product, name)['IMG'][:,xlim[0]:xlim[1]]
+        img = self.orig_data(product, name)['IMG_pdb']
+        aux = self.aux_data(product, name)
+        #xlim = np.sort((np.where(aux['latitude'] <= latlim[0])[0][0], 
+        #                np.where(aux['latitude'] <= latlim[1])[0][0]))
+        latitude = np.array(aux['latitude'])
+        if not latlim:
+            latlim = [latitude[0], latitude[-1]]
+        idx = self.wherelat(product, name, latlim)
     
+        #idx = (latitude >= np.min(latlim)) & (
+        #       latitude <= np.max(latlim))
+        id1 = (np.where(idx)[0])[0]
+        id2 = (np.where(idx)[0])[-1]
+        #img = self.orig_data(product, name)['IMG'][:,xlim[0]:xlim[1]]
     
         # Plot
         # ----
@@ -321,18 +364,69 @@ class Env:
             fig, ax = plt.subplots(figsize=(16,5))
         
         ax.imshow(img, **kwargs)
+        ax.set_xlim(id1, id2)
         
-        lat1 = aux['latitude'][xlim[0]]
-        lat2 = aux['latitude'][xlim[1]]
+        #lat1 = aux['latitude'][xlim[0]]
+        #lat2 = aux['latitude'][xlim[1]]
         
-        if ylim:
-            ax.set_ylim(ylim)    
-        if not title:
-            title = f'{product} - {name} ({lat1:.2f} to {lat2:.2f} latitude)' 
-        ax.set_title(title, fontsize=15)
+        
+        #if not title:
+        #    title = f'{product} - {name} ({latlim} latitude)' 
+        #ax.set_title(title, fontsize=15)
     
-        return img
+        return img, idx
 
+    
+    def signalconversion(self, product, name, dn, calval=0):
+        """ Convert the orig LRS signal to power. Note that the coefficients 
+        of conversion varies for each processing and track. The coefficients 
+        are extracted from the lbl files.
+    
+        ARGUMENTS
+        ---------
+        dn: vector of float
+            signal from the orig data
+        calval: float
+            Calibration value in dB
+        """
+        
+        # Find lbl file name
+        files = self.files[product][name]
+        try:
+            lbl_filename = [file for file in files if '.lbl' in file][0]
+        except IndexError:
+            logging.warning('No orig data for ' + product + ' ' + name)
+        
+        # Get Conversion coefficients 
+        line = read.lbl_keyword(lbl_filename, 'Pmax', fullline=True)
+        Pmax = float(line.split(' P')[1][:-1].split(' = ')[-1])
+        Pmin = float(line.split(' P')[2][:-1].split(' = ')[-1])
+        
+        # Conversion
+        pdb = (255-dn)*(Pmax-Pmin)/255+Pmin
+        out = pdb
+        return out
+        
+        
+    def wherelat(self, product, name, lim):
+        """ return a binary vector indicating where latitudes 
+        are within the indicated limits
+    
+        ARGUMENTS
+        ---------
+        lim: [float, float]
+            latitude limits
+        
+        RETURN
+        ------
+        Binary vector
+        """
+        aux = self.aux_data(product, name)
+        vec = np.array(aux['latitude'])
+        out = (vec >= np.min(lim)) & (vec <= np.max(lim))
+        
+        return out
+    
 
 if __name__ == "__main__":
     # execute only if run as a script

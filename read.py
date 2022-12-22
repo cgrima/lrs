@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def lbl_keyword(lbl_filename, keyword):
+def lbl_keyword(lbl_filename, keyword, fullline=False):
     """Output a keyword value from a lbl file
     
     ARGUMENTS
@@ -10,6 +10,8 @@ def lbl_keyword(lbl_filename, keyword):
         lbl filename
     keyword: string
         keyword to read
+    fullline: Binary
+        If True, will output the first entire line where a string match is found
     
     RETURN
     ------
@@ -20,7 +22,10 @@ def lbl_keyword(lbl_filename, keyword):
 
     for line in lines:
         if keyword in line:
-            value = "".join(line.split()).split('=')[-1].replace('"', '')
+            if fullline:
+                value = line
+            else:
+                value = "".join(line.split()).split('=')[-1].replace('"', '')
     
     # Set correct output type
     try:
@@ -31,6 +36,7 @@ def lbl_keyword(lbl_filename, keyword):
     except  ValueError:
         return value
 
+    
 def img(img_filename, lbl_filename):
     """Read a binary LRS file
     
@@ -43,6 +49,7 @@ def img(img_filename, lbl_filename):
     
     RETURN
     ------
+    header, img
     """
     
     #---------

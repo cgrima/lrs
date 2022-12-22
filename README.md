@@ -102,7 +102,7 @@ The repository provides a limited function to plot a radargram:
 product = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0'
 name = '20071221033918'
 
-img = LRS.plt_rdg(product, name, latlim=[-80, -70], cmap='gray', vmin=0, vmax=100)
+img = LRS.plt_rdg(product, name, latlim=[-80, -70], cmap='gray_r', vmin=-10, vmax=40)
 ```
 ![Plot](./plt_rdg.png?raw=true)
 
@@ -120,11 +120,14 @@ _ = LRS.run('aux', 'sar05', '20071221033918', archive=True, delete=True)
 
 ### Surface Echo
 
-TODO
+To get the surface echo coordinate and power
+```bash
+srf = lrs.processing.srf(data, method='mouginot2010')
+```
 
 ### Batch processing
 
-To run a processing on all the available data using 8 cores in parallel:
+To run a processing on all the available data using 8 cores in parallel
 
 ```bash
 LRS.run_all('aux', 'sar05', delete=False, n_jobs=8)
@@ -134,7 +137,7 @@ LRS.run_all('aux', 'sar05', delete=False, n_jobs=8)
 
 ### From Orig Labels
 
-This function uses the min and max coordinates in the label files of the original LRS data. It is approximate but fast. Below an example to search for tracks crossing a box bounded by longitude and latitudes (over Schrodinger crater):
+This function uses the min and max coordinates in the label files of the original LRS data. It is approximate but fast. Below an example to search for tracks crossing a box bounded by longitude and latitudes (over Schrodinger crater)
 
 ```bash
 tracks = LRS.tracks_intersecting_latlon_box([-80, -70], [110, 155], sampling=100e3)

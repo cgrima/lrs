@@ -1,5 +1,7 @@
-from . import read
+import numpy as np
 import pandas as pd
+import subradar as sr
+from . import read
 
 
 def aux(data, **kwargs):
@@ -23,3 +25,37 @@ def aux(data, **kwargs):
     df['range0'] = data['DISTANCE_TO_RANGE0']
     
     return df
+
+
+def srf(data, method='mouginot2010', winsize=300):
+    """ Create surface data from the headers in the orignal data
+    
+    ARGUMENTS
+    ---------
+    data: dict
+        Classdef.Env.orig_data()
+    kwargs: tuple
+        arguments from subradar.surface.detector
+    """
+    df = pd.DataFrame()
+    
+    # Data
+    img = np.array(data['IMG_pdb'])
+    
+    if method == 'grima2012':
+        img_for_detection = 10**(img/20)
+    else:
+        img_for_detection = 10**(img/20)
+        
+    y = sr.surface.detector(img_for_detection, axis=1, 
+                            y0=np.zeros(np.shape(img)[1])+200, 
+                            winsize=winsize, 
+                            method=method)
+    
+    y = np.flip(y) #surface.detector returns y backwards?
+    y = [int(val) for val in y]
+    
+    pdb = [img[val, i] for i, val in enumerate(y)]
+    amp = [10**(val/20) for val in pdb]
+    
+    return {'y':y, 'pdb':pdb, 'amp':amp}
