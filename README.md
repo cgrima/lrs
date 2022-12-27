@@ -54,8 +54,9 @@ Create an instance that will hold basic information about the LRS dataset.
 By default, any python command is assumed to be launched from within
 the `./code` directory. If note, please change the keyword `root_path`.
 
-```bash
+```python
 # Initiate instance
+import lrs
 LRS = lrs.Classdef.Env(root_path='../')
 ```
 
@@ -64,7 +65,7 @@ LRS = lrs.Classdef.Env(root_path='../')
 
 Basic requests from data within the label files:
 
-```bash
+```python
 # Get available file names
 LRS.files['sln-l-lrs-5-sndr-ss-sar40-power-v1.0']['20071219231328']
 >> ['../data/orig/sln-l-lrs-5-sndr-ss-sar40-power-v1.0/20071219/data/LRS_SAR40KM_20071219231328.lbl']
@@ -82,7 +83,7 @@ LRS.clock_lim['sln-l-lrs-5-sndr-ss-sar40-power-v1.0']['20071219231328']
 
 To load original data from a track in a friendly format:
 
-```bash
+```python
 # Load original data
 data = LRS.orig_data['sln-l-lrs-5-sndr-ss-sar05-power-v1.0']['20071221033918']
 
@@ -98,13 +99,13 @@ data.keys()
 
 The repository provides a limited function to plot a radargram:
 
-```bash
+```python
 product = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0'
 name = '20071221033918'
 
 img = LRS.plt_rdg(product, name, latlim=[-80, -70], cmap='gray_r', vmin=-10, vmax=40)
 ```
-![Plot](./images/plt_rdg.png?raw=true)
+![Plot](./plt_rdg.png?raw=true)
 
 
 ## Run processings
@@ -114,20 +115,20 @@ The `./data/lrs/xtra/` folder will store derived data product with the same hier
 ### Auxiliary Data
 
 To extract and archive auxiliary data from the header of the LRS orig files
-```bash
+```python
 _ = LRS.run('aux', 'sar05', '20071221033918', archive=True, delete=True)
 ```
 
 ### Surface Echo
 
 To get the surface echo coordinate and power
-```bash
+```python
 srf = lrs.processing.srf(data, method='mouginot2010')
 ```
 
-Default method is from Mouginot et al. (2010). Method from Grima et al. (2012) can also be used but appears to pick off-nadir clutters more often. However, note that Mouginot et al. (2010) can sometimes pick an earlier continuous artifact as shown below below
+The default surface picking method is from Mouginot et al. (2010). Using the one from Grima et al. (2012) is also possible, but it seems to pick the off-nadir echo mor often. However, Mouginot et al. (2010) is more sensitive to an earlier continuous artifact as illustrated below
 
-```bash
+```python
 product = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0'
 name = '20071221093226'
 latlim = [10, 20]
@@ -142,14 +143,14 @@ plt.plot(srf['y'], label='[Mouginot et al., 2010]')
 
 plt.legend()
 ```
-![Plot](./images/surface_picking.png?raw=true)
 
+![Plot](./surface_pickng.png?raw=true)
 
 ### Batch processing
 
 To run a processing on all the available data using 8 cores in parallel
 
-```bash
+```python
 LRS.run_all('aux', 'sar05', delete=False, n_jobs=8)
 ```
 
@@ -159,6 +160,6 @@ LRS.run_all('aux', 'sar05', delete=False, n_jobs=8)
 
 This function uses the min and max coordinates in the label files of the original LRS data. It is approximate but fast. Below an example to search for tracks crossing a box bounded by longitude and latitudes (over Schrodinger crater)
 
-```bash
+```python
 tracks = LRS.tracks_intersecting_latlon_box([-80, -70], [110, 155], sampling=100e3)
 ```
