@@ -104,7 +104,7 @@ name = '20071221033918'
 
 img = LRS.plt_rdg(product, name, latlim=[-80, -70], cmap='gray_r', vmin=-10, vmax=40)
 ```
-![Plot](./plt_rdg.png?raw=true)
+![Plot](./images/plt_rdg.png?raw=true)
 
 
 ## Run processings
@@ -124,6 +124,26 @@ To get the surface echo coordinate and power
 ```bash
 srf = lrs.processing.srf(data, method='mouginot2010')
 ```
+
+Default method is from Mouginot et al. (2010). Method from Grima et al. (2012) can also be used but appears to pick off-nadir clutters more often. However, note that Mouginot et al. (2010) can sometimes pick an earlier continuous artifact as shown below below
+
+```bash
+product = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0'
+name = '20071221093226'
+latlim = [10, 20]
+
+img, idx = LRS.plt_rdg(product, name, latlim=latlim, cmap='gray_r', vmin=-10, vmax=40)
+
+srf = lrs.processing.srf(data, method='grima2012')
+plt.plot(srf['y'], label='[Grima et al., 2012]')
+
+srf = lrs.processing.srf(data, method='mouginot2010')
+plt.plot(srf['y'], label='[Mouginot et al., 2010]')
+
+plt.legend()
+```
+![Plot](./images/surface_picking.png?raw=true)
+
 
 ### Batch processing
 

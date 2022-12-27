@@ -64,25 +64,28 @@ class Env:
         else:
             return res[0]
         
+        
     def index_files(self):
         """ Index all data files 
         """
         for product in self.products:
             # Indicate below what folders need to be indexed
             index_paths = [os.path.join(self.orig_path, product),
-                           os.path.join(self.xtra_path, 'aux', product),]
+                           os.path.join(self.xtra_path, 'aux', product),
+                           os.path.join(self.xtra_path, 'srf', product),]
             
             self.files[product] = {}
             for path in index_paths:
-                for day in os.listdir(path):
-                    filenames = glob.glob(path + '/' + day + '/data/*.*')
-                    for filename in filenames:
-                        name = filename.split('KM_')[-1][:14]
-                        if name not in self.files[product].keys():
-                            self.files[product][name] = {}
-                            self.files[product][name] = [filename]
-                        else:
-                            self.files[product][name].append(filename)
+                if os.path.exists(path):
+                    for day in os.listdir(path):
+                        filenames = glob.glob(path + '/' + day + '/data/*.*')
+                        for filename in filenames:
+                            name = filename.split('KM_')[-1][:14]
+                            if name not in self.files[product].keys():
+                                self.files[product][name] = {}
+                                self.files[product][name] = [filename]
+                            else:
+                                self.files[product][name].append(filename)
 
             logging.info(' ' + product + ' has ' + 
                          str(len(self.files[product])) + ' tracks')
@@ -175,6 +178,35 @@ class Env:
         else:
             logging.warning('No aux data for ' + product + ' ' + name)
    
+        
+    def srf_data(self, product, name):
+        """ Read srf data. It concatenates all columns from the files
+            in the aux folder 
+        
+        ARGUMENT
+        --------
+        product: string
+            product full name or substring (e.g., sar05)
+        name: string
+            file identifier (e.g., '20071221033918')
+            
+        RETURN
+        ------
+        
+        """
+        product = self.product_match(product)
+        files = self.files[product][name]
+        aux_filenames = [file for file in files if '/srf/' in file]
+        
+        if aux_filenames:
+            out = pd.DataFrame()
+            for aux_filename in aux_filenames:
+                df = pd.read_csv(aux_filename)
+                out = pd.concat([out, df], axis=1)
+            return out.to_dict(orient='list')
+        else:
+            logging.warning('No srf data for ' + product + ' ' + name)
+            
         
     def tracks_intersecting_latlon_box(self, boxlats, boxlons, sampling=10e3,
                                        download=False):
@@ -269,6 +301,18 @@ class Env:
             archive_path = self.xtra_path + '/'.join([process, product, 
                                                      name[:8] ,'data'])
             suffix = '_orig.txt'
+            filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
+            
+            archive_fullname = '/'.join([archive_path, filename])
+            
+        if process == 'srf':
+            if not hasattr(kwargs, 'method'):
+                logging.warning('You need to define a method for processing.srf(). Default: mouginot2010')
+                method = 'mouginot2010'
+            data = self.orig_data(product, name)
+            archive_path = self.xtra_path + '/'.join([process, product, 
+                                                     name[:8] ,'data'])
+            suffix = f'_{method}.txt'#'_orig.txt'
             filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
             
             archive_fullname = '/'.join([archive_path, filename])

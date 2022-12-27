@@ -27,30 +27,39 @@ def aux(data, **kwargs):
     return df
 
 
-def srf(data, method='mouginot2010', winsize=300):
+def srf(data, method='mouginot2010', **kwargs):
     """ Create surface data from the headers in the orignal data
     
     ARGUMENTS
     ---------
     data: dict
         Classdef.Env.orig_data()
+    method: string
+        Method to pick the surface (passed to subradar.surface.pick.detector)
     kwargs: tuple
         arguments from subradar.surface.detector
+        
+    RETURN
+    ------
+    Dictionary of coordinate (y), power in dB (pdb), and linear amplitude (amp)
     """
     df = pd.DataFrame()
     
     # Data
     img = np.array(data['IMG_pdb'])
     
+    if method == 'mouginot2010':
+        img_for_detection = 10**(img/20)
+        y0 = np.zeros(np.shape(img)[1])+200
+        winsize = 300
+        
     if method == 'grima2012':
         img_for_detection = 10**(img/20)
-    else:
-        img_for_detection = 10**(img/20)
+        y0 = np.zeros(np.shape(img)[1])+200
+        winsize = 300
         
     y = sr.surface.detector(img_for_detection, axis=1, 
-                            y0=np.zeros(np.shape(img)[1])+200, 
-                            winsize=winsize, 
-                            method=method)
+                            y0=y0, winsize=winsize, method=method)
     
     y = np.flip(y) #surface.detector returns y backwards?
     y = [int(val) for val in y]
@@ -58,4 +67,6 @@ def srf(data, method='mouginot2010', winsize=300):
     pdb = [img[val, i] for i, val in enumerate(y)]
     amp = [10**(val/20) for val in pdb]
     
-    return {'y':y, 'pdb':pdb, 'amp':amp}
+    df = pd.DataFrame({'y':y, 'pdb':pdb, 'amp':amp})
+    
+    return df
