@@ -144,7 +144,7 @@ plt.plot(srf['y'], label='[Mouginot et al., 2010]')
 plt.legend()
 ```
 
-![Plot](./images/surface_pickng.png?raw=true)
+![Plot](./images/surface_picking.png?raw=true)
 
 ### Batch processing
 
