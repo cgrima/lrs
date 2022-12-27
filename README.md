@@ -105,7 +105,7 @@ name = '20071221033918'
 
 img = LRS.plt_rdg(product, name, latlim=[-80, -70], cmap='gray_r', vmin=-10, vmax=40)
 ```
-![Plot](./plt_rdg.png?raw=true)
+![Plot](./images/plt_rdg.png?raw=true)
 
 
 ## Run processings
@@ -144,7 +144,7 @@ plt.plot(srf['y'], label='[Mouginot et al., 2010]')
 plt.legend()
 ```
 
-![Plot](./surface_pickng.png?raw=true)
+![Plot](./images/surface_pickng.png?raw=true)
 
 ### Batch processing
 
