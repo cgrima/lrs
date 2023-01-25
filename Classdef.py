@@ -25,7 +25,7 @@ class Env:
     def __init__(self, root_path = os.path.join('..', '')):
         """ Get various parameters defining the dataset
         """
-        self.remote_host = 'https://data.darts.isas.jaxa.jp/pub/pds3'
+        self.remote_host = 'https://data.darts.isas.jaxa.jp/pub/pds3/'
         self.root_path = root_path
         self.data_path = root_path + 'data/'
         self.code_path = root_path + 'code/'
@@ -89,7 +89,9 @@ class Env:
         """
         filename = 'LRS_' + product.split('-')[6].upper() + 'KM_' + name + '.' + typ
         relative_path = os.path.join(product, name[:8], 'data')
-        remote_file = os.path.join(self.remote_host, relative_path, filename)
+        #remote_file = os.path.join(self.remote_host, relative_path, filename)
+        remote_file = urllib.parse.urljoin(self.remote_host, relative_path + '/' + filename)
+        print(remote_file)
         local_file = os.path.join(self.orig_path, relative_path, filename)
         
         if not glob.glob(local_file) or delete:
