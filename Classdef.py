@@ -37,7 +37,7 @@ class Env:
         self.lon_lim = {}
         self.products = self.index_products()
         self.index_files()
-        #self.read_labels()
+        self.read_labels()
         
         
     def index_products(self, path=False):
