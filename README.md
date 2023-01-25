@@ -48,6 +48,12 @@ cd data/orig
 lftp -c "open https://data.darts.isas.jaxa.jp/pub/pds3; mirror -c -P 10 --only-missing -I 'LRS_SAR05KM_20071221093226*' sln-l-lrs-5-sndr-ss-sar05-power-v1.0/"
 ```
 
+Alternatively, use the built-in function. You will need to initialise the LRS class first (see next section)
+```bash
+LRS.download('sln-l-lrs-5-sndr-ss-sar40-power-v1.0', '20071219231328')
+```
+
+
 ## Initialisation
 
 Create an instance that will hold basic information about the LRS dataset.

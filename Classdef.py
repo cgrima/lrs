@@ -13,6 +13,7 @@ import glob
 import logging
 import numpy as np
 import pandas as pd
+import urllib.request
 from shapely.geometry import Point, Polygon
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
@@ -21,9 +22,10 @@ from . import read, tools, processing
 class Env:
     """ Class for interacting with data files in the dataset
     """
-    def __init__(self, root_path = '../'):
+    def __init__(self, root_path = os.path.join('..', '')):
         """ Get various parameters defining the dataset
         """
+        self.remote_host = 'https://data.darts.isas.jaxa.jp/pub/pds3'
         self.root_path = root_path
         self.data_path = root_path + 'data/'
         self.code_path = root_path + 'code/'
@@ -35,7 +37,8 @@ class Env:
         self.lon_lim = {}
         self.products = self.index_products()
         self.index_files()
-        self.read_labels()
+        #self.read_labels()
+        
         
     def index_products(self, path=False):
         """List available products
@@ -63,6 +66,36 @@ class Env:
                 print(i)
         else:
             return res[0]
+
+        
+    def download(self, product, name, typ='img', delete=False):
+        """ Download original data for a given product and name
+        
+        ARGUMENTS
+        ---------
+        product: string
+            product full name or substring (e.g., sar05)
+        name: string
+            file identifier (e.g., '20071221033918')
+        typ: string
+            File extension (lbl or img)
+        delete: binary
+            whether to delete existing local file
+        
+        RETURN
+        ------
+        Nothing
+        
+        """
+        filename = 'LRS_' + product.split('-')[6].upper() + 'KM_' + name + '.' + typ
+        relative_path = os.path.join(product, name[:8], 'data')
+        remote_file = os.path.join(self.remote_host, relative_path, filename)
+        local_file = os.path.join(self.orig_path, relative_path, filename)
+        
+        if not glob.glob(local_file) or delete:
+            os.makedirs(os.path.join(self.orig_path, relative_path), exist_ok=True)
+            _ = urllib.request.urlretrieve(remote_file, local_file)
+            logging.info(' ' + local_file + ' DOWNLOADED')
         
         
     def index_files(self):
@@ -281,7 +314,7 @@ class Env:
             product full name or substring (e.g., sar05)
         name: string
             file identifier (e.g., '20071221033918')
-        archive: bit
+        archive: binary
             whether to archive
         delete: bit
             Force archive if file already exist
