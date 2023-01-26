@@ -100,6 +100,8 @@ class Env:
             open(local_file, "wb").write(response.content)
             #_ = urllib.request.urlretrieve(remote_file, local_file)
             logging.info(' ' + local_file + ' DOWNLOADED')
+        else:
+            logging.info(' ' + local_file + ' EXISTS (NOT DOWNLOADED)')
         
         
     def index_files(self):
