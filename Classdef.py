@@ -28,17 +28,29 @@ class Env:
         """
         self.remote_host = 'https://data.darts.isas.jaxa.jp/pub/pds3/'
         self.root_path = root_path
-        self.data_path = os.path.join(root_path, 'data')#root_path + 'data/'
         self.code_path = os.path.join(root_path, 'code')#root_path + 'code/'
+        self.data_path = os.path.join(root_path, 'data')#root_path + 'data/'
         self.orig_path = os.path.join(self.data_path, 'orig', 'lrs')#self.data_path + 'orig/lrs/'
         self.xtra_path = os.path.join(self.data_path, 'xtra', 'lrs')#self.data_path + 'xtra/lrs/'
         self.files = {}
         self.clock_lim = {}
         self.lat_lim = {}
         self.lon_lim = {}
+        self.initialize_hierarchy()
         self.products = self.index_products()
         self.index_files()
         self.read_labels()
+        
+    def initialize_hierarchy(self):
+        paths = [self.data_path,
+                 self.orig_path,
+                 self.xtra_path
+                ]
+        
+        for path in paths:
+            if not glob.glob(path):
+                os.makedirs(path)
+                logging.info(path + ' CREATED')
         
         
     def index_products(self, path=False):
@@ -69,7 +81,7 @@ class Env:
             return res[0]
 
         
-    def download(self, product, name, typ='img', delete=False):
+    def download(self, product, name, typ='lbl', delete=False):
         """ Download original data for a given product and name
         
         ARGUMENTS

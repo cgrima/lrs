@@ -2,13 +2,22 @@
 Tools for manipulating Lunar Radar Sounder (LRS) data from the JAXA's Kaguya 
 spacecraft. Data available at [JAXA's Data ARchives and Transmission System (DARTS) ](https://darts.isas.jaxa.jp/planet/pdap/selene/index.html.en).
 
+
 ## Working Directory
 
-The hierarchy of the working directory is assumed to be 
+Create a `code` folder in your working directory and clone this repository inside. In a terminal:
+
+```bash
+mkdir code
+cd code
+git clone git@github.com:cgrima/lrs.git
+```
+
+From now on, the code will automatically build the hierarchy with the data. It will look like below. To start, just proceed to the next section **Initilisation**.
 
 ```bash
 ./code/
-    lrs/ # This repository
+    lrs/ # Clone of this repository
 ./data/
     orig/ # Original products
         lrs/ # LRS products provided by JAXA
@@ -29,13 +38,68 @@ The hierarchy of the working directory is assumed to be
 ./[...]
 ```
 
+
+## Initialisation
+
+Launch a python instance from within the `./code` folder.
+
+Optionally, set first your logging level to `INFO` in order to see info messages.
+
+```python
+import logging
+logger = logging.getLogger().setLevel(logging.INFO)
+```
+
+Then, create an instance (i.e., Class) that will hold basic information about the LRS dataset.
+By default, any python command is assumed to be launched from within
+the `./code` directory. If note, please change the keyword `root_path` in `lrs.Classdev.Env()`.
+
+```python
+# Initiate instance
+import lrs
+LRS = lrs.Classdef.Env()
+```
+
+If the `data/` folder does not exist, it will be automatically created. There is no data files neither, so the the command `LRS.files` should return an empty array.
+
+
 ## Data Download
+
+### With the built-in python function
+
+Once the LRS Class is loaded (see above), you can download data for a given product and track. The `typ` keyword let's choos whether you want to download the `lbl` or `img` file. For example:
+
+```bash
+_ = LRS.download('sln-l-lrs-5-sndr-ss-sar40-power-v1.0', '20071219231328', typ='lbl')
+_ = LRS.download('sln-l-lrs-5-sndr-ss-sar40-power-v1.0', '20071219231328', typ='img')
+```
+
+For the code to integrate your dowloaded file, re-initialize the LRS Class:
+
+```python
+LRS = lrs.Classdef.Env()
+```
+
+It should tell you that there is 1 track available.
+
+The repository has a `tracks.csv` file with all the identifiers of tracks available on the JAXA server. You can use this file to batch download the data and populate your hierarchy. For example:
+
+```python
+# Open tracks.csv
+tracks = np.loadtxt('lrs/tracks.csv', delimiter=",", dtype=str)
+
+# Batch download only the lbl files from the sar05 products:
+for track in tracks:
+    if track[0] = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0':
+        _ = LRS.download(track[0], track[1], typ='lbl') 
+```
+
+
+### [Optional] From the terminal (using lftp)
 
 To download data from a given processing mode (e.g. 
 `sln-l-lrs-5-sndr-ss-sar05-power-v1.0`), but without `*.img` and `*.jpg` files
 to download the data hierarchy without the largest files (`man lftp` for additional options):
-
-### From the terminla (using lftp)
 
 ```bash
 cd data/orig
@@ -48,45 +112,6 @@ To download data related to a specific orbit:
 ```bash
 cd data/orig
 lftp -c "open https://data.darts.isas.jaxa.jp/pub/pds3; mirror -c -P 10 --only-missing -I 'LRS_SAR05KM_20071221093226*' sln-l-lrs-5-sndr-ss-sar05-power-v1.0/"
-```
-
-### With the built-in function
-
->You will need to initialise the LRS class first (see next section)
-
-```bash
-_ = LRS.download('sln-l-lrs-5-sndr-ss-sar40-power-v1.0', '20071219231328', typ='img')
-```
-
-The repository has a `tracks.csv` with all the identifiers of data available on the JAXA server. You can use this file to batch download the data and populate your hierarchy. For example:
-
-```python
-# Open tracks.csv
-tracks = np.loadtxt(filename, delimiter=",", dtype=str)
-
-# Batch download only the lbl files from the sar05 products:
-for track in tracks:
-    if track[0] = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0':
-        _ = LRS.download(track[0], track[1], typ='lbl') 
-```
-
-## Initialisation
-
-Optionally, set first your logging level to `INFO` in order to see info messages.
-
-```python
-import logging
-logger = logging.getLogger().setLevel(logging.DEBUG)
-```
-
-Then, Create an instance that will hold basic information about the LRS dataset.
-By default, any python command is assumed to be launched from within
-the `./code` directory. If note, please change the keyword `root_path` in `lrs.Classdev.Env()`.
-
-```python
-# Initiate instance
-import lrs
-LRS = lrs.Classdef.Env()
 ```
 
 
