@@ -88,6 +88,8 @@ It should tell you that there is 1 track available.
 The repository has a `tracks.csv` file with all the identifiers of tracks available on the JAXA server. You can use this file to batch download the data and populate your hierarchy. For example:
 
 ```python
+import numpy as np
+
 # Open tracks.csv
 tracks = np.loadtxt('lrs/tracks.csv', delimiter=",", dtype=str)
 
