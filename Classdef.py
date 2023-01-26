@@ -346,10 +346,12 @@ class Env:
             suffix = '_orig.txt'
             filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
             
-            archive_fullname = '/'.join([archive_path, filename])
+            archive_fullname = os.path.join(archive_path, filename)
             
         if process == 'srf':
-            if not hasattr(kwargs, 'method'):
+            if 'method' in kwargs:
+                method = kwargs['method']
+            else:
                 logging.warning('You need to define a method for processing.srf(). Default: mouginot2010')
                 method = 'mouginot2010'
             data = self.orig_data(product, name)
@@ -358,7 +360,7 @@ class Env:
             suffix = f'_{method}.txt'#'_orig.txt'
             filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
             
-            archive_fullname = os.path.join([archive_path, filename])
+            archive_fullname = os.path.join(archive_path, filename)
         
         # RUN PROCESS
         #------------
