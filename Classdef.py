@@ -141,9 +141,19 @@ class Env:
                                 self.files[product][name] = [filename]
                             else:
                                 self.files[product][name].append(filename)
+                                
+            # Sort files by type
+            files = []
+            for track in self.files[product]:
+                track_files = self.files[product][track]
+                files = np.concatenate((files, track_files), axis=0)
+                
+            lbl_files = [file for file in files if "lbl" in file]
+            img_files = [file for file in files if "img" in file]
 
             logging.info(' ' + product + ' has ' + 
-                         str(len(self.files[product])) + ' tracks')
+                         str(len(lbl_files)) + ' .lbl and ' + 
+                         str(len(img_files)) + ' .img files')
 
     def read_labels(self):
         """ Read and store in the Class some parameters from the label files
@@ -196,7 +206,7 @@ class Env:
             lbl_filename = [file for file in files if '.lbl' in file][0]
             img_filename = [file for file in files if '.img' in file][0]
         except IndexError:
-            logging.warning('No orig data for ' + product + ' ' + name)
+            logging.debug('No orig data for ' + product + ' ' + name)
         else:
             aux, img = read.img(img_filename, lbl_filename)
             out = aux.to_dict(orient='list')
@@ -325,7 +335,7 @@ class Env:
         return out
         
         
-    def run(self, process, product, name, archive=False, delete=False, **kwargs):
+    def run(self, process, product, name, archive=True, delete=False, **kwargs):
         """ Run a process
         
         ARGUMENT
@@ -386,20 +396,18 @@ class Env:
         except:
             result = []
         else:
-            
-        # ARCHIVE
-        #--------
-        
+            # ARCHIVE
+            #--------
             if archive:
                 if not glob.glob(archive_fullname) or delete:
                     os.makedirs(archive_path, exist_ok=True)
                     result.to_csv(archive_fullname, header=True, index=False)
                     logging.info(' ' + archive_fullname + ' CREATED')
         
-            return result
+        return result
         
         
-    def run_all(self, process, product, delete=False, 
+    def run_all(self, process, product, delete=False, archive=True,
                 n_jobs=4, verbose=6, **kwargs):
         """ Run a process on all tracks/names within a product
         """
@@ -407,12 +415,14 @@ class Env:
         names = self.files[product].keys()
         
         results = Parallel(n_jobs=n_jobs, verbose=verbose)(
-            delayed(self.run)(process, product, name, {'delete':delete, **kwargs}) 
+            delayed(self.run)(process, product, name, {'archive':archive ,
+                                                       'delete':delete, 
+                                                       **kwargs}) 
             for name in names)
         
-        for name in names:
-            _ = self.run(process, product, name, 
-                     archive=True, delete=delete, **kwargs)
+        #for name in names:
+        #    _ = self.run(process, product, name, 
+        #             archive=archive, delete=delete, **kwargs)
 
             
     def plt_rdg(self, product, name, ax=None, latlim=None,
