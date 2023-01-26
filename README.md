@@ -13,7 +13,7 @@ cd code
 git clone git@github.com:cgrima/lrs.git
 ```
 
-From now on, the code will automatically build the hierarchy with the data. It will look like below. To start, just proceed to the next section **Initilisation**.
+From now on, the code will automatically build the hierarchy with the data. It will look like below. To start, just proceed to the next section: **Initilisation**.
 
 ```bash
 ./code/
@@ -52,7 +52,7 @@ logger = logging.getLogger().setLevel(logging.INFO)
 
 Then, create an instance (i.e., Class) that will hold basic information about the LRS dataset.
 By default, any python command is assumed to be launched from within
-the `./code` directory. If note, please change the keyword `root_path` in `lrs.Classdev.Env()`.
+the `./code` directory. If not, please change the keyword `root_path` in `lrs.Classdev.Env()`.
 
 ```python
 # Initiate instance
@@ -60,18 +60,21 @@ import lrs
 LRS = lrs.Classdef.Env()
 ```
 
-If the `data/` folder does not exist, it will be automatically created. There is no data files neither, so the the command `LRS.files` should return an empty array.
+If the `data/` folder does not exist, it will be automatically be created. There is no data files neither, so the the command `LRS.files` should return an empty array.
 
 
 ## Data Download
 
 ### With the built-in python function
 
-Once the LRS Class is loaded (see above), you can download data for a given product and track. The `typ` keyword let's choos whether you want to download the `lbl` or `img` file. For example:
+Once the LRS Class is loaded (see above), you can download data files for a given product and track. The `typ` keyword let's you choose whether you want to download the `lbl` or `img` file. For example, to download both:
 
 ```bash
-_ = LRS.download('sln-l-lrs-5-sndr-ss-sar40-power-v1.0', '20071219231328', typ='lbl')
-_ = LRS.download('sln-l-lrs-5-sndr-ss-sar40-power-v1.0', '20071219231328', typ='img')
+product = 'sln-l-lrs-5-sndr-ss-sar40-power-v1.0'
+track = '20071219231328'
+
+_ = LRS.download(product, track, typ='lbl')
+_ = LRS.download(product, track, typ='img')
 ```
 
 For the code to integrate your dowloaded file, re-initialize the LRS Class:
