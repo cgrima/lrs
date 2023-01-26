@@ -48,11 +48,25 @@ cd data/orig
 lftp -c "open https://data.darts.isas.jaxa.jp/pub/pds3; mirror -c -P 10 --only-missing -I 'LRS_SAR05KM_20071221093226*' sln-l-lrs-5-sndr-ss-sar05-power-v1.0/"
 ```
 
-Alternatively, use the built-in function. You will need to initialise the LRS class first (see next section)
+Alternatively, use the built-in function.
+
+>You will need to initialise the LRS class first (see next section)
+
 ```bash
 LRS.download('sln-l-lrs-5-sndr-ss-sar40-power-v1.0', '20071219231328')
 ```
 
+The repository has a `tracks.csv` with all the identifiers of data available on the JAXA server. You can use this file to batch download the data and populate your hierarchy. For example:
+
+```python
+# Open tracks.csv
+tracks = np.loadtxt(filename, delimiter=",", dtype=str)
+
+# Batch download only the lbl files from the sar05 products:
+for track in tracks:
+    if track[0] = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0':
+        LRS.download(track[0], track[1], typ='lbl') 
+```
 
 ## Initialisation
 
@@ -101,26 +115,19 @@ data.keys()
 >> dict_keys(['OBSERVATION_TIME', 'DELAY', 'START_STEP', 'SUB_SPACECRAFT_LATITUDE', 'SUB_SPACECRAFT_LONGITUDE', 'SPACECRAFT_ALTITUDE', 'DISTANCE_TO_RANGE0', 'TI', 'IMG'])
 ```
 
-## Plot a radargram
 
-The repository provides a limited function to plot a radargram:
+## Processings
 
-```python
-product = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0'
-name = '20071221033918'
-
-img = LRS.plt_rdg(product, name, latlim=[-80, -70], cmap='gray_r', vmin=-10, vmax=40)
-```
-![Plot](./images/plt_rdg.png?raw=true)
-
-
-## Run processings
-
-The `./data/lrs/xtra/` folder will store derived data product with the same hierarchy as in the `orig` directory. 
+The `./data/lrs/xtra/` folder will store derived data product created by various processings, and with the same hierarchy as in the `orig` directory. 
 
 ### Auxiliary Data
 
-To extract and archive auxiliary data from the header of the LRS orig files
+Auxilliary data (e.g., latitude, longitude...) can be obtained by loading the original `.img` file as explained in the former section. However, the original data also contains the radargram, which can take a lot of memory. The auxiliary files are like the orig files but without the radargram, so that it is much lighter to load.
+
+> `aux` files are used by many functions in this repository. Make sure to create those files first before attempting other processings.
+
+To extract and archive auxiliary data from the header of the LRS orig files. 
+
 ```python
 _ = LRS.run('aux', 'sar05', '20071221033918', archive=True, delete=True)
 ```
@@ -159,6 +166,21 @@ To run a processing on all the available data using 8 cores in parallel
 ```python
 LRS.run_all('aux', 'sar05', delete=False, n_jobs=8)
 ```
+
+
+
+## Plot a radargram
+
+The repository provides a limited function to plot a radargram:
+
+```python
+product = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0'
+name = '20071221033918'
+
+img = LRS.plt_rdg(product, name, latlim=[-80, -70], cmap='gray_r', vmin=-10, vmax=40)
+```
+![Plot](./images/plt_rdg.png?raw=true)
+
 
 ## Geographic Query
 

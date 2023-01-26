@@ -85,7 +85,7 @@ class Env:
         
         RETURN
         ------
-        Nothing
+        Path to the local filename downloaded
         
         """
         filename = 'LRS_' + product.split('-')[6].upper() + 'KM_' + name + '.' + typ
@@ -102,6 +102,8 @@ class Env:
             logging.info(' ' + local_file + ' DOWNLOADED')
         else:
             logging.info(' ' + local_file + ' EXISTS (NOT DOWNLOADED)')
+            
+        return local_file
         
         
     def index_files(self):
