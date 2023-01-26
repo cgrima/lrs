@@ -411,6 +411,7 @@ class Env:
                 n_jobs=4, verbose=6, **kwargs):
         """ Run a process on all tracks/names within a product
         """
+        logging.warning('Logging does not work with joblib.Parallel')
         product = self.product_match(product)
         names = self.files[product].keys()
         
