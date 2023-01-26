@@ -13,7 +13,8 @@ import glob
 import logging
 import numpy as np
 import pandas as pd
-import urllib.request
+import requests
+import urllib
 from shapely.geometry import Point, Polygon
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
@@ -91,12 +92,13 @@ class Env:
         relative_path = os.path.join(product, name[:8], 'data')
         #remote_file = os.path.join(self.remote_host, relative_path, filename)
         remote_file = urllib.parse.urljoin(self.remote_host, relative_path + '/' + filename)
-        print(remote_file)
         local_file = os.path.join(self.orig_path, relative_path, filename)
         
         if not glob.glob(local_file) or delete:
             os.makedirs(os.path.join(self.orig_path, relative_path), exist_ok=True)
-            _ = urllib.request.urlretrieve(remote_file, local_file)
+            response = requests.get(remote_file)
+            open(local_file, "wb").write(response.content)
+            #_ = urllib.request.urlretrieve(remote_file, local_file)
             logging.info(' ' + local_file + ' DOWNLOADED')
         
         
