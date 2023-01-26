@@ -392,7 +392,7 @@ class Env:
         #------------
         
         try:
-            result = getattr(processing, process)(data, **kwargs)
+            result = getattr(processing, process)(data, method=method)
         except:
             result = []
         else:
@@ -416,9 +416,10 @@ class Env:
         names = self.files[product].keys()
         
         results = Parallel(n_jobs=n_jobs, verbose=verbose)(
-            delayed(self.run)(process, product, name, {'archive':archive ,
+            delayed(self.run)(process, product, name, **{'archive':archive ,
                                                        'delete':delete, 
-                                                       **kwargs}) 
+                                                       #'method':method,
+                                                       }, **kwargs) 
             for name in names)
         
         #for name in names:
