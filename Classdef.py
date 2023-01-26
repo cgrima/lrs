@@ -341,8 +341,10 @@ class Env:
         
         if process == 'aux':
             data = self.orig_data(product, name)
-            archive_path = self.xtra_path + '/'.join([process, product, 
-                                                     name[:8] ,'data'])
+            archive_path = os.path.join(self.xtra_path, process, product, 
+                                                     name[:8] ,'data')
+            #archive_path = self.xtra_path + '/'.join([process, product, 
+            #                                         name[:8] ,'data'])
             suffix = '_orig.txt'
             filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
             
@@ -355,8 +357,10 @@ class Env:
                 logging.warning('You need to define a method for processing.srf(). Default: mouginot2010')
                 method = 'mouginot2010'
             data = self.orig_data(product, name)
-            archive_path = self.xtra_path + '/'.join([process, product, 
-                                                     name[:8] ,'data'])
+            archive_path = os.path.join(self.xtra_path, process, product, 
+                                                     name[:8] ,'data')
+            #archive_path = self.xtra_path + '/'.join([process, product, 
+            #                                         name[:8] ,'data'])
             suffix = f'_{method}.txt'#'_orig.txt'
             filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
             
