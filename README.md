@@ -35,6 +35,8 @@ To download data from a given processing mode (e.g.
 `sln-l-lrs-5-sndr-ss-sar05-power-v1.0`), but without `*.img` and `*.jpg` files
 to download the data hierarchy without the largest files (`man lftp` for additional options):
 
+### From the terminla (using lftp)
+
 ```bash
 cd data/orig
 lftp -c "open https://data.darts.isas.jaxa.jp/pub/pds3; mirror -c -P 10 --only-missing -X '*.img' -X '*.jpg' sln-l-lrs-5-sndr-ss-sar05-power-v1.0/"
@@ -48,12 +50,12 @@ cd data/orig
 lftp -c "open https://data.darts.isas.jaxa.jp/pub/pds3; mirror -c -P 10 --only-missing -I 'LRS_SAR05KM_20071221093226*' sln-l-lrs-5-sndr-ss-sar05-power-v1.0/"
 ```
 
-Alternatively, use the built-in function.
+### With the built-in function
 
 >You will need to initialise the LRS class first (see next section)
 
 ```bash
-LRS.download('sln-l-lrs-5-sndr-ss-sar40-power-v1.0', '20071219231328')
+_ = LRS.download('sln-l-lrs-5-sndr-ss-sar40-power-v1.0', '20071219231328', typ='img')
 ```
 
 The repository has a `tracks.csv` with all the identifiers of data available on the JAXA server. You can use this file to batch download the data and populate your hierarchy. For example:
@@ -65,12 +67,19 @@ tracks = np.loadtxt(filename, delimiter=",", dtype=str)
 # Batch download only the lbl files from the sar05 products:
 for track in tracks:
     if track[0] = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0':
-        LRS.download(track[0], track[1], typ='lbl') 
+        _ = LRS.download(track[0], track[1], typ='lbl') 
 ```
 
 ## Initialisation
 
-Create an instance that will hold basic information about the LRS dataset.
+Optionally, set first your logging level to `INFO` in order to see info messages.
+
+```python
+import logging
+logger = logging.getLogger().setLevel(logging.DEBUG)
+```
+
+Then, Create an instance that will hold basic information about the LRS dataset.
 By default, any python command is assumed to be launched from within
 the `./code` directory. If note, please change the keyword `root_path`.
 

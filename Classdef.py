@@ -28,10 +28,10 @@ class Env:
         """
         self.remote_host = 'https://data.darts.isas.jaxa.jp/pub/pds3/'
         self.root_path = root_path
-        self.data_path = root_path + 'data/'
-        self.code_path = root_path + 'code/'
-        self.orig_path = self.data_path + 'orig/lrs/'
-        self.xtra_path = self.data_path + 'xtra/lrs/'
+        self.data_path = os.path.join(root_path, 'data')#root_path + 'data/'
+        self.code_path = os.path.join(root_path, 'code')#root_path + 'code/'
+        self.orig_path = os.path.join(self.data_path, 'orig', 'lrs')#self.data_path + 'orig/lrs/'
+        self.xtra_path = os.path.join(self.data_path, 'xtra', 'lrs')#self.data_path + 'xtra/lrs/'
         self.files = {}
         self.clock_lim = {}
         self.lat_lim = {}
@@ -119,7 +119,9 @@ class Env:
             for path in index_paths:
                 if os.path.exists(path):
                     for day in os.listdir(path):
-                        filenames = glob.glob(path + '/' + day + '/data/*.*')
+                        search_path = os.path.join(path, day, 'data', '*.*')
+                        filenames = glob.glob(search_path)
+                        #filenames = glob.glob(path + '/' + day + '/data/*.*')
                         for filename in filenames:
                             name = filename.split('KM_')[-1][:14]
                             if name not in self.files[product].keys():
@@ -356,7 +358,7 @@ class Env:
             suffix = f'_{method}.txt'#'_orig.txt'
             filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
             
-            archive_fullname = '/'.join([archive_path, filename])
+            archive_fullname = os.path.join([archive_path, filename])
         
         # RUN PROCESS
         #------------
