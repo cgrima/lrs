@@ -81,12 +81,12 @@ logger = logging.getLogger().setLevel(logging.DEBUG)
 
 Then, Create an instance that will hold basic information about the LRS dataset.
 By default, any python command is assumed to be launched from within
-the `./code` directory. If note, please change the keyword `root_path`.
+the `./code` directory. If note, please change the keyword `root_path` in `lrs.Classdev.Env()`.
 
 ```python
 # Initiate instance
 import lrs
-LRS = lrs.Classdef.Env(root_path='../')
+LRS = lrs.Classdef.Env()
 ```
 
 
