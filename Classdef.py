@@ -135,7 +135,9 @@ class Env:
                         filenames = glob.glob(search_path)
                         #filenames = glob.glob(path + '/' + day + '/data/*.*')
                         for filename in filenames:
-                            name = filename.split('KM_')[-1][:14]
+                            name = [i for i in filename.split('_') 
+                                    if '200' in i][-1][:14]
+                            #name = filename.split('_')[-1][:14]
                             if name not in self.files[product].keys():
                                 self.files[product][name] = {}
                                 self.files[product][name] = [filename]
@@ -244,7 +246,7 @@ class Env:
             logging.warning('No aux data for ' + product + ' ' + name)
    
         
-    def srf_data(self, product, name):
+    def srf_data(self, product, name, method='mouginot2010'):
         """ Read srf data. It concatenates all columns from the files
             in the aux folder 
         
@@ -260,7 +262,8 @@ class Env:
         
         """
         product = self.product_match(product)
-        files = self.files[product][name]
+        _files = self.files[product][name]
+        files = [file for file in _files if method in file]
         aux_filenames = [file for file in files if '/srf/' in file]
         
         if aux_filenames:

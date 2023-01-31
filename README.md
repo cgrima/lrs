@@ -135,11 +135,11 @@ LRS.files['sln-l-lrs-5-sndr-ss-sar40-power-v1.0']['20071219231328']
 >> ['../data/orig/sln-l-lrs-5-sndr-ss-sar40-power-v1.0/20071219/data/LRS_SAR40KM_20071219231328.lbl']
 
 # Get start and stop latitude
-LRS.lat_lim('sln-l-lrs-5-sndr-ss-sar40-power-v1.0', '20071219231328')
+LRS.lat_lim['sln-l-lrs-5-sndr-ss-sar40-power-v1.0']['20071219231328']
 >> [-35.961, 75.148]
 
 # Get start and stop spacecraft clock time
-LRS.clock_lim('sln-l-lrs-5-sndr-ss-sar40-power-v1.0', '20071219231328')
+LRS.clock_lim['sln-l-lrs-5-sndr-ss-sar40-power-v1.0']['20071219231328']
 >> [882141206, 882143419]
 ```
 
