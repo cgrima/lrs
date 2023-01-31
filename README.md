@@ -108,7 +108,7 @@ tracks = np.loadtxt('lrs/tracks.csv', delimiter=",", dtype=str)
 
 # Batch download only the lbl files from the sar05 products:
 for track in tracks:
-    if track[0] = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0':
+    if track[0] == 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0':
         _ = LRS.download(track[0], track[1], typ='lbl') 
 ```
 
