@@ -100,7 +100,8 @@ class Env:
         Path to the local filename downloaded
         
         """
-        filename = 'LRS_' + product.split('-')[6].upper() + 'KM_' + name + '.' + typ
+        #filename = 'LRS_' + product.split('-')[6].upper() + 'KM_' + name + '.' + typ6 
+        filename = self.filename_root(product, name) + '.' + typ
         relative_path = os.path.join(product, name[:8], 'data')
         #remote_file = os.path.join(self.remote_host, relative_path, filename)
         remote_file = urllib.parse.urljoin(self.remote_host, relative_path + '/' + filename)
@@ -116,7 +117,23 @@ class Env:
             logging.info(' ' + local_file + ' EXISTS (NOT DOWNLOADED)')
             
         return local_file
-        
+    
+    
+    def filename_root(self, product, name):
+        """ output the filename of a product track following the JAXA convention
+        """
+        if product == 'sln-l-lrs-5-sndr-ss-high-v2.0':
+            middle_name = 'SWH_RV20'
+        if product == 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0':
+            middle_name = 'SAR05KM'
+        if product == 'sln-l-lrs-5-sndr-ss-sar10-power-v1.0':
+            middle_name = 'SAR10KM'
+        if product == 'sln-l-lrs-5-sndr-ss-sar40-power-v1.0':
+            middle_name = 'SAR40KM'
+            
+        filename = '_'.join(['LRS', middle_name, name])
+        return filename
+    
         
     def index_files(self):
         """ Index all data files 
@@ -365,13 +382,15 @@ class Env:
         # ------------
         
         if process == 'aux':
+            method = None
             data = self.orig_data(product, name)
             archive_path = os.path.join(self.xtra_path, process, product, 
                                                      name[:8] ,'data')
             #archive_path = self.xtra_path + '/'.join([process, product, 
             #                                         name[:8] ,'data'])
             suffix = '_orig.txt'
-            filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
+            filename = self.filename_root(product, name) + suffix
+            #filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
             
             archive_fullname = os.path.join(archive_path, filename)
             
@@ -379,15 +398,16 @@ class Env:
             if 'method' in kwargs:
                 method = kwargs['method']
             else:
-                logging.warning('You need to define a method for processing.srf(). Default: mouginot2010')
+                logging.warning('You need to define a method for processing.srf(). Default is mouginot2010')
                 method = 'mouginot2010'
             data = self.orig_data(product, name)
             archive_path = os.path.join(self.xtra_path, process, product, 
                                                      name[:8] ,'data')
             #archive_path = self.xtra_path + '/'.join([process, product, 
             #                                         name[:8] ,'data'])
-            suffix = f'_{method}.txt'#'_orig.txt'
-            filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
+            suffix = f'_{method}.txt'
+            filename = self.filename_root(product, name) + suffix
+            #filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
             
             archive_fullname = os.path.join(archive_path, filename)
         

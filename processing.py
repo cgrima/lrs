@@ -22,7 +22,10 @@ def aux(data, **kwargs):
     df['latitude'] = data['SUB_SPACECRAFT_LATITUDE']
     df['longitude'] = data['SUB_SPACECRAFT_LONGITUDE']
     df['altitude'] = data['SPACECRAFT_ALTITUDE']
-    df['range0'] = data['DISTANCE_TO_RANGE0']
+    if 'DISTANCE_TO_RANGE0' in data.keys():
+        df['range0'] = data['DISTANCE_TO_RANGE0']
+    else:
+        df['range0'] = np.zeros(len(data['OBSERVATION_TIME']))
     
     return df
 
