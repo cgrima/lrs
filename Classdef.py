@@ -448,7 +448,7 @@ class Env:
 
             
     def plt_rdg(self, product, name, ax=None, latlim=None,
-                title=None, **kwargs):
+                title=None, invertx=False, **kwargs):
         """ Plot a LRS radargram
         
         ARGUMENTS
@@ -465,6 +465,8 @@ class Env:
             y limits of the plot
         title: string
             Title of the plot
+        invertx: binary
+            Whether to invert the x-axis
         **kwargs: tuple
             kwargs of matplotlib imshow
         
@@ -502,6 +504,8 @@ class Env:
         
         ax.imshow(img, **kwargs)
         ax.set_xlim(id1, id2)
+        if invertx:
+            ax.invert_xaxis()
         
         #lat1 = aux['latitude'][xlim[0]]
         #lat2 = aux['latitude'][xlim[1]]
