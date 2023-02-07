@@ -18,7 +18,7 @@ def intermediate_latlon(lat_lim, lon_lim, sampling=10e3):
     latlon
     """
     # calculate distance between points
-    g = pyproj.Geod(a=1738.1e3, b=1736.0e3) # Moon equatorial and polar radius
+    g = pyproj.Geod(a=1737400, b=1737400) # Moon equatorial and polar radius
     (az12, az21, dist) = g.inv(lon_lim[0], lat_lim[0], lon_lim[1], lat_lim[1])
 
     # find "npts" points equally spaced by "sampling" meters

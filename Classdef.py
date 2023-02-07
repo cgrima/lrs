@@ -17,6 +17,8 @@ import requests
 import urllib
 from shapely.geometry import Point, Polygon
 from joblib import Parallel, delayed
+from pyproj import CRS
+from pyproj import Transformer
 import matplotlib.pyplot as plt
 from . import read, tools, processing
 
@@ -355,7 +357,8 @@ class Env:
         return out
         
         
-    def run(self, process, product, name, archive=True, delete=False, **kwargs):
+    def run(self, process, product, name, archive=True, delete=False, 
+            **kwargs):
         """ Run a process
         
         ARGUMENT
@@ -386,11 +389,8 @@ class Env:
             data = self.orig_data(product, name)
             archive_path = os.path.join(self.xtra_path, process, product, 
                                                      name[:8] ,'data')
-            #archive_path = self.xtra_path + '/'.join([process, product, 
-            #                                         name[:8] ,'data'])
             suffix = '_orig.txt'
             filename = self.filename_root(product, name) + suffix
-            #filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
             
             archive_fullname = os.path.join(archive_path, filename)
             
@@ -403,11 +403,8 @@ class Env:
             data = self.orig_data(product, name)
             archive_path = os.path.join(self.xtra_path, process, product, 
                                                      name[:8] ,'data')
-            #archive_path = self.xtra_path + '/'.join([process, product, 
-            #                                         name[:8] ,'data'])
             suffix = f'_{method}.txt'
             filename = self.filename_root(product, name) + suffix
-            #filename = 'LRS_' + product.split('-')[-3].upper() + 'KM_' + name + suffix
             
             archive_fullname = os.path.join(archive_path, filename)
         
@@ -566,8 +563,29 @@ class Env:
         out = (vec >= np.min(lim)) & (vec <= np.max(lim))
         
         return out
-    
 
+    
+    def lonlat2stereo(self, product, name, sampling=1000e3, use_aux=False):
+        """ Convert longitude/latitude to xy stereographic
+        """
+        crs_lonlat = CRS.from_string("+proj=longlat +R=1737400 +no_defs")
+        crs_stereo = CRS.from_proj4("+proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs +type=crs")
+        transformer = Transformer.from_crs(crs_lonlat, crs_stereo)
+        
+        latlim = self.lat_lim[product][name]
+        lonlim = self.lon_lim[product][name]
+        if not use_aux:
+            geo = tools.intermediate_latlon(latlim, lonlim, sampling=sampling)
+            lon = geo['lons']
+            lat = geo['lats']
+        else:
+            aux = self.aux_data(product, name)
+            lon = aux['longitude']
+            lat = aux['latitude']
+        x, y = transformer.transform(lon, lat)
+        return x, y#{'x':x, 'y':y}
+        
+        
 if __name__ == "__main__":
     # execute only if run as a script
     main()
