@@ -30,10 +30,10 @@ class Env:
         """
         self.remote_host = 'https://data.darts.isas.jaxa.jp/pub/pds3/'
         self.root_path = root_path
-        self.code_path = os.path.join(root_path, 'code')#root_path + 'code/'
-        self.data_path = os.path.join(root_path, 'data')#root_path + 'data/'
-        self.orig_path = os.path.join(self.data_path, 'orig', 'lrs')#self.data_path + 'orig/lrs/'
-        self.xtra_path = os.path.join(self.data_path, 'xtra', 'lrs')#self.data_path + 'xtra/lrs/'
+        self.code_path = os.path.join(root_path, 'code', '')#root_path + 'code/'
+        self.data_path = os.path.join(root_path, 'data', '')#root_path + 'data/'
+        self.orig_path = os.path.join(self.data_path, 'orig', 'lrs', '')#self.data_path + 'orig/lrs/'
+        self.xtra_path = os.path.join(self.data_path, 'xtra', 'lrs', '')#self.data_path + 'xtra/lrs/'
         self.files = {}
         self.clock_lim = {}
         self.lat_lim = {}
@@ -104,13 +104,13 @@ class Env:
         """
         #filename = 'LRS_' + product.split('-')[6].upper() + 'KM_' + name + '.' + typ6 
         filename = self.filename_root(product, name) + '.' + typ
-        relative_path = os.path.join(product, name[:8], 'data')
+        #relative_path = os.path.join(product, name[:8], 'data')
         #remote_file = os.path.join(self.remote_host, relative_path, filename)
-        remote_file = urllib.parse.urljoin(self.remote_host, relative_path + '/' + filename)
-        local_file = os.path.join(self.orig_path, relative_path, filename)
+        remote_file = urllib.parse.urljoin(self.remote_host, product + '/' + name[:8] + '/data' + '/' + filename)
+        local_file = os.path.join(self.orig_path, product, name[:8], 'data', filename)
         
         if not glob.glob(local_file) or delete:
-            os.makedirs(os.path.join(self.orig_path, relative_path), exist_ok=True)
+            os.makedirs(os.path.join(self.orig_path, product, name[:8], 'data'), exist_ok=True)
             response = requests.get(remote_file)
             open(local_file, "wb").write(response.content)
             #_ = urllib.request.urlretrieve(remote_file, local_file)
