@@ -39,7 +39,7 @@ From now on, the code will automatically build the hierarchy with the data. It w
             [...]
     xtra/ # Derived products that follow the orig hierarchy
         lrs/
-            aux/ # Auxilliary data derived from orig 
+            anc/ # Ancilliary data derived from orig 
                 sln-l-lrs-5-sndr-ss-sar05-power-v1.0/
                 sln-l-lrs-5-sndr-ss-sar10-power-v1.0/
             srf/ # Surface data derived from orig 
@@ -172,16 +172,16 @@ data.keys()
 
 The `./data/lrs/xtra/` folder will store derived data product created by various processings, and with the same hierarchy as in the `orig` directory. 
 
-### Auxiliary Data
+### Anciliary Data
 
-Auxilliary data (e.g., latitude, longitude...) can be obtained by loading the original `.img` file as explained in the former section. However, the original data also contains the radargram, which can take a lot of memory. The auxiliary files are like the orig files but without the radargram, so that it is much lighter to load.
+Ancilliary data (e.g., latitude, longitude...) can be obtained by loading the original `.img` file as explained in the former section. However, the original data also contains the radargram, which can take a lot of memory. The anciliary files are like the orig files but without the radargram, so that it is much lighter to load.
 
-> `aux` files are used by many functions in this repository. Make sure to create those files first before attempting other processings.
+> `anc` files are used by many functions in this repository. Make sure to create those files first before attempting other processings.
 
-To extract and archive auxiliary data from the header of the LRS orig files. 
+To extract and archive anciliary data from the header of the LRS orig files. 
 
 ```python
-_ = LRS.run('aux', 'sar05', '20071221033918', archive=True, delete=True)
+_ = LRS.run('anc', 'sar05', '20071221033918', archive=True, delete=True)
 ```
 
 ### Surface Echo
@@ -216,7 +216,7 @@ plt.legend()
 To run a processing on all the available data using 8 cores in parallel
 
 ```python
-LRS.run_all('aux', 'sar05', delete=False, n_jobs=8)
+LRS.run_all('anc', 'sar05', delete=False, n_jobs=8)
 ```
 
 

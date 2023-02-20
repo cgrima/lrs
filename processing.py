@@ -4,8 +4,8 @@ import subradar as sr
 from . import read
 
 
-def aux(data, **kwargs):
-    """ Create auxilliary data from the headers in the orignal data
+def anc(data, **kwargs):
+    """ Create ancilliary data from the headers in the orignal data
     
     ARGUMENTS
     ---------

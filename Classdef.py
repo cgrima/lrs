@@ -143,7 +143,7 @@ class Env:
         for product in self.products:
             # Indicate below what folders need to be indexed
             index_paths = [os.path.join(self.orig_path, product),
-                           os.path.join(self.xtra_path, 'aux', product),
+                           os.path.join(self.xtra_path, 'anc', product),
                            os.path.join(self.xtra_path, 'srf', product),]
             
             self.files[product] = {}
@@ -229,16 +229,16 @@ class Env:
         except IndexError:
             logging.debug('No orig data for ' + product + ' ' + name)
         else:
-            aux, img = read.img(img_filename, lbl_filename)
-            out = aux.to_dict(orient='list')
+            anc, img = read.img(img_filename, lbl_filename)
+            out = anc.to_dict(orient='list')
             out.update({'IMG':img})
             out.update({'IMG_pdb':self.signalconversion(product, name, img)})
             return out#.update({'DATA':img})
 
         
-    def aux_data(self, product, name):
-        """ Read aux data. It concatenates all columns from the files
-            in the aux folder 
+    def anc_data(self, product, name):
+        """ Read anc data. It concatenates all columns from the files
+            in the anc folder 
         
         ARGUMENT
         --------
@@ -253,21 +253,21 @@ class Env:
         """
         product = self.product_match(product)
         files = self.files[product][name]
-        aux_filenames = [file for file in files if '/aux/' in file]
+        anc_filenames = [file for file in files if '/anc/' in file]
         
-        if aux_filenames:
+        if anc_filenames:
             out = pd.DataFrame()
-            for aux_filename in aux_filenames:
-                df = pd.read_csv(aux_filename)
+            for anc_filename in anc_filenames:
+                df = pd.read_csv(anc_filename)
                 out = pd.concat([out, df], axis=1)
             return out.to_dict(orient='list')
         else:
-            logging.warning('No aux data for ' + product + ' ' + name)
+            logging.warning('No anc data for ' + product + ' ' + name)
    
         
     def srf_data(self, product, name, method='mouginot2010'):
         """ Read srf data. It concatenates all columns from the files
-            in the aux folder 
+            in the anc folder 
         
         ARGUMENT
         --------
@@ -283,12 +283,12 @@ class Env:
         product = self.product_match(product)
         _files = self.files[product][name]
         files = [file for file in _files if method in file]
-        aux_filenames = [file for file in files if '/srf/' in file]
+        anc_filenames = [file for file in files if '/srf/' in file]
         
-        if aux_filenames:
+        if anc_filenames:
             out = pd.DataFrame()
-            for aux_filename in aux_filenames:
-                df = pd.read_csv(aux_filename)
+            for anc_filename in anc_filenames:
+                df = pd.read_csv(anc_filename)
                 out = pd.concat([out, df], axis=1)
             return out.to_dict(orient='list')
         else:
@@ -384,7 +384,7 @@ class Env:
         # ARCHIVE NAME
         # ------------
         
-        if process == 'aux':
+        if process == 'anc':
             method = None
             data = self.orig_data(product, name)
             archive_path = os.path.join(self.xtra_path, process, product, 
@@ -482,10 +482,10 @@ class Env:
         # ----
     
         img = self.orig_data(product, name)['IMG_pdb']
-        aux = self.aux_data(product, name)
-        #xlim = np.sort((np.where(aux['latitude'] <= latlim[0])[0][0], 
-        #                np.where(aux['latitude'] <= latlim[1])[0][0]))
-        latitude = np.array(aux['latitude'])
+        anc = self.anc_data(product, name)
+        #xlim = np.sort((np.where(anc['latitude'] <= latlim[0])[0][0], 
+        #                np.where(anc['latitude'] <= latlim[1])[0][0]))
+        latitude = np.array(anc['latitude'])
         if not latlim:
             latlim = [latitude[0], latitude[-1]]
         idx = self.wherelat(product, name, latlim)
@@ -507,8 +507,8 @@ class Env:
         if invertx:
             ax.invert_xaxis()
         
-        #lat1 = aux['latitude'][xlim[0]]
-        #lat2 = aux['latitude'][xlim[1]]
+        #lat1 = anc['latitude'][xlim[0]]
+        #lat2 = anc['latitude'][xlim[1]]
         
         
         #if not title:
@@ -562,14 +562,14 @@ class Env:
         ------
         Binary vector
         """
-        aux = self.aux_data(product, name)
-        vec = np.array(aux['latitude'])
+        anc = self.anc_data(product, name)
+        vec = np.array(anc['latitude'])
         out = (vec >= np.min(lim)) & (vec <= np.max(lim))
         
         return out
 
     
-    def lonlat2stereo(self, product, name, sampling=1000e3, use_aux=False):
+    def lonlat2stereo(self, product, name, sampling=1000e3, use_anc=False):
         """ Convert longitude/latitude to xy stereographic
         """
         crs_lonlat = CRS.from_string("+proj=longlat +R=1737400 +no_defs")
@@ -578,14 +578,14 @@ class Env:
         
         latlim = self.lat_lim[product][name]
         lonlim = self.lon_lim[product][name]
-        if not use_aux:
+        if not use_anc:
             geo = tools.intermediate_latlon(latlim, lonlim, sampling=sampling)
             lon = geo['lons']
             lat = geo['lats']
         else:
-            aux = self.aux_data(product, name)
-            lon = aux['longitude']
-            lat = aux['latitude']
+            anc = self.anc_data(product, name)
+            lon = anc['longitude']
+            lat = anc['latitude']
         x, y = transformer.transform(lon, lat)
         return x, y#{'x':x, 'y':y}
         
