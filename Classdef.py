@@ -253,7 +253,7 @@ class Env:
         """
         product = self.product_match(product)
         files = self.files[product][name]
-        anc_filenames = [file for file in files if '/anc/' in file]
+        anc_filenames = [file for file in files if os.path.join('anc','') in file]
         
         if anc_filenames:
             out = pd.DataFrame()
@@ -283,7 +283,7 @@ class Env:
         product = self.product_match(product)
         _files = self.files[product][name]
         files = [file for file in _files if method in file]
-        anc_filenames = [file for file in files if '/srf/' in file]
+        anc_filenames = [file for file in files if os.path.join('srf','') in file]
         
         if anc_filenames:
             out = pd.DataFrame()
