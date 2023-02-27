@@ -51,14 +51,19 @@ def srf(data, method='mouginot2010', **kwargs):
     # Data
     img = np.array(data['IMG_pdb'])
     
+    # surface estimate
+    y_size = np.shape(img)[1]
+    ymax = [np.argmax(img[:,i]) for i in np.arange(y_size)]
+    y_estimate = np.mean(ymax)
+    
     if method == 'mouginot2010':
         img_for_detection = 10**(img/20)
-        y0 = np.zeros(np.shape(img)[1])+200
+        y0 = np.zeros(np.shape(img)[1])+y_estimate
         winsize = 300
         
     if method == 'grima2012':
         img_for_detection = 10**(img/20)
-        y0 = np.zeros(np.shape(img)[1])+200
+        y0 = np.zeros(np.shape(img)[1])+y_estimate
         winsize = 300
         
     y = sr.surface.detector(img_for_detection, axis=1, 
