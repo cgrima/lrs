@@ -1,7 +1,11 @@
 import numpy as np
 import pandas as pd
 import subradar as sr
-from . import read
+from obspy.core import AttribDict
+from obspy.core import Stats
+from obspy.core import Trace, Stream
+from obspy.io.segy.segy import SEGYBinaryFileHeader
+from obspy.io.segy.segy import SEGYTraceHeader
 
 
 def anc(data, **kwargs):
@@ -78,3 +82,33 @@ def srf(data, method='mouginot2010', **kwargs):
     df = pd.DataFrame({'y':y, 'pdb':pdb, 'amp':amp})
     
     return df
+
+
+def sgy(data, **kwargs):
+    ''' Convert data to segy
+    '''
+
+    out = Stream()                      # Make a new Stream object, basically an empty list-like thing.
+    rdg = np.float32(data['IMG_pdb'])
+    rdg = np.flip( np.rot90(rdg), axis=0)
+    for i, t in enumerate(rdg):                # Loop over all trace-like things in the similarity array.
+        header = {'delta':0.05/1e6, 
+                  'bin':i,
+                  'latitude':data['SUB_SPACECRAFT_LATITUDE'][i],
+                  'longitude':data['SUB_SPACECRAFT_LONGITUDE'][i],
+                  'altitude':data['SPACECRAFT_ALTITUDE'][i],
+                 }          # Make a header for the trace; ObsPy needs this.
+        #for key in data.keys:
+        #    header.update({key:data[key][i]})
+        trace = Trace(t, header=header) # Make the ObsPy Trace with the data and the header.
+        out.append(trace)               # Append the Trace to the Stream.
+        
+    # Header
+    header = """JAXA/Lunar Radar Sounder (LRS)
+    Algorithm: https://github.com/cgrima/lrs/blob/main/processing.py.
+    dt = 0.05 s. (along-track sampling)
+    dz =  = 25 m. in void (Range Resolution)""".encode('utf-8')
+    
+    out.stats = Stats(dict(textual_file_header=header))
+    
+    return out

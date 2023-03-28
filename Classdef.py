@@ -408,6 +408,16 @@ class Env:
             
             archive_fullname = os.path.join(archive_path, filename)
         
+        if process == 'sgy':
+            method = None
+            data = self.orig_data(product, name)
+            archive_path = os.path.join(self.xtra_path, process, product, 
+                                                     name[:8] ,'data')
+            suffix = '_orig.sgy'
+            filename = self.filename_root(product, name) + suffix
+            
+            archive_fullname = os.path.join(archive_path, filename)
+        
         # RUN PROCESS
         #------------
         
@@ -421,7 +431,10 @@ class Env:
             if archive:
                 if not glob.glob(archive_fullname) or delete:
                     os.makedirs(archive_path, exist_ok=True)
-                    result.to_csv(archive_fullname, header=True, index=False)
+                    if process == 'sgy':
+                        result.write(archive_fullname, format='SEGY', data_encoding=5)  # encode 1 for IBM, 5 for IEEE
+                    else:
+                        result.to_csv(archive_fullname, header=True, index=False)
                     logging.info(' ' + archive_fullname + ' CREATED')
         
         return result
