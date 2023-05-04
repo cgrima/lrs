@@ -340,7 +340,34 @@ class Env:
             return out
         else:
             logging.warning('No sim data for ' + product + ' ' + name)
-            
+    
+    
+    def matching_track(self, product1, name1, product2):
+        """ Give the name of a trach overlaping a track from another product
+        
+        ARGUMENT
+        --------
+        product1: string
+            product considered
+        name1: string
+            name considered
+        product2: string
+            product to search a matching track within
+        
+        RETURN
+        ------
+            Name of the matching track from product2
+        """
+        time1s = self.epoch_lim[product1][name1]
+        for name2 in self.epoch_lim[product2]:
+            #logging.info(name2)
+            time2s = self.epoch_lim[product2][name2]
+            if (time2s[0] <= time1s[0] <= time2s[1]) or (time2s[0] <= time1s[1] <= time2s[1]):
+                return name2
+        
+        #return name2
+    
+    
         
     def tracks_intersecting_latlon_box(self, boxlats, boxlons, sampling=10e3,
                                        download=False):
