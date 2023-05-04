@@ -59,6 +59,12 @@ class Env:
         """List available products
         """
         out = os.listdir(self.orig_path)
+        
+        for xtra in os.listdir(self.xtra_path):
+            products = os.listdir(os.path.join(self.xtra_path, xtra))
+            out.extend(products)
+        
+        out = list(set(out)) # unique products
         return out
         
     def product_match(self, product):
@@ -140,11 +146,18 @@ class Env:
     def index_files(self):
         """ Index all data files 
         """
+        # Logging Header
+        cols = ['---', 'Product', 'lbl', 'img', 'anc', 'srf', 'sim']
+        logging.info(f' {cols[1]:^37} {cols[2]:>7} {cols[3]:>7} {cols[4]:>7} {cols[5]:>7} {cols[6]:>7}')
+        logging.info(f' {cols[0]:^37} {cols[0]:>7} {cols[0]:>7} {cols[0]:>7} {cols[0]:>7} {cols[0]:>7}')
+
+        # list products
         for product in self.products:
             # Indicate below what folders need to be indexed
             index_paths = [os.path.join(self.orig_path, product),
                            os.path.join(self.xtra_path, 'anc', product),
-                           os.path.join(self.xtra_path, 'srf', product),]
+                           os.path.join(self.xtra_path, 'srf', product),
+                           os.path.join(self.xtra_path, 'sim', product),]
             
             self.files[product] = {}
             for path in index_paths:
@@ -171,10 +184,17 @@ class Env:
                 
             lbl_files = [file for file in files if "lbl" in file]
             img_files = [file for file in files if "img" in file]
+            anc_files = [file for file in files if "anc" in file]
+            srf_files = [file for file in files if "srf" in file]
+            sim_files = [file for file in files if "sim" in file]
 
-            logging.info(' ' + product + ' has ' + 
-                         str(len(lbl_files)) + ' .lbl and ' + 
-                         str(len(img_files)) + ' .img files')
+            logging.info(f' {product:<37} {str(len(lbl_files)):>7}' + 
+                         f' {str(len(img_files)):>7} {str(len(anc_files)):>7}' + 
+                         f' {str(len(srf_files)):>7} {str(len(sim_files)):>7}'
+                        )
+            #logging.info(' ' + product + ' has ' + 
+            #             str(len(lbl_files)) + ' .lbl and ' + 
+            #             str(len(img_files)) + ' .img files')
 
     def read_labels(self):
         """ Read and store in the Class some parameters from the label files
@@ -184,27 +204,27 @@ class Env:
             self.lat_lim[product] = {}
             self.lon_lim[product] = {}
             for name in self.files[product].keys():
-                lbl_filenames = [file for file in self.files[product][name] 
-                if '.lbl' in file]
-                lbl_filename = lbl_filenames[0]
-                # Clock
-                lim1 = read.lbl_keyword(lbl_filename,
-                'SPACECRAFT_CLOCK_START_COUNT')
-                lim2 = read.lbl_keyword(lbl_filename,
-                'SPACECRAFT_CLOCK_STOP_COUNT')
-                self.clock_lim[product][name] = [lim1, lim2]
-                # Latitude
-                lim1 = read.lbl_keyword(lbl_filename,
-                'START_SUB_SPACECRAFT_LATITUDE')
-                lim2 = read.lbl_keyword(lbl_filename,
-                'STOP_SUB_SPACECRAFT_LATITUDE')
-                self.lat_lim[product][name] = [lim1, lim2]
-                # Longitude
-                lim1 = read.lbl_keyword(lbl_filename,
-                'START_SUB_SPACECRAFT_LONGITUDE')
-                lim2 = read.lbl_keyword(lbl_filename,
-                'STOP_SUB_SPACECRAFT_LONGITUDE')
-                self.lon_lim[product][name] = [lim1, lim2]
+                if '.lbl' in self.files[product][name]:
+                    lbl_filenames = [file for file in self.files[product][name]]
+                    lbl_filename = lbl_filenames[0]
+                    # Clock
+                    lim1 = read.lbl_keyword(lbl_filename, 
+                                            'SPACECRAFT_CLOCK_START_COUNT')
+                    lim2 = read.lbl_keyword(lbl_filename, 
+                                            'SPACECRAFT_CLOCK_STOP_COUNT')
+                    self.clock_lim[product][name] = [lim1, lim2]
+                    # Latitude
+                    lim1 = read.lbl_keyword(lbl_filename, 
+                                            'START_SUB_SPACECRAFT_LATITUDE')
+                    lim2 = read.lbl_keyword(lbl_filename, 
+                                            'STOP_SUB_SPACECRAFT_LATITUDE')
+                    self.lat_lim[product][name] = [lim1, lim2]
+                    # Longitude
+                    lim1 = read.lbl_keyword(lbl_filename, 
+                                            'START_SUB_SPACECRAFT_LONGITUDE')
+                    lim2 = read.lbl_keyword(lbl_filename, 
+                                            'STOP_SUB_SPACECRAFT_LONGITUDE')
+                    self.lon_lim[product][name] = [lim1, lim2]
                 
                 
     def orig_data(self, product, name):
@@ -417,6 +437,7 @@ class Env:
             filename = self.filename_root(product, name) + suffix
             
             archive_fullname = os.path.join(archive_path, filename)
+            
         
         # RUN PROCESS
         #------------

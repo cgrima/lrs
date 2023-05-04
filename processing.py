@@ -6,6 +6,7 @@ from obspy.core import Stats
 from obspy.core import Trace, Stream
 from obspy.io.segy.segy import SEGYBinaryFileHeader
 from obspy.io.segy.segy import SEGYTraceHeader
+import scipy.io
 
 
 def anc(data, **kwargs):
@@ -85,8 +86,8 @@ def srf(data, method='mouginot2010', **kwargs):
 
 
 def sgy(data, **kwargs):
-    ''' Convert data to segy
-    '''
+    """ Convert data to segy
+    """
 
     out = Stream()                      # Make a new Stream object, basically an empty list-like thing.
     rdg = np.float32(data['IMG_pdb'])
