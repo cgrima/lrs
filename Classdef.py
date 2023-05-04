@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import requests
 import urllib
+from datetime import datetime
 from shapely.geometry import Point, Polygon
 from joblib import Parallel, delayed
 from pyproj import CRS
@@ -36,6 +37,7 @@ class Env:
         self.xtra_path = os.path.join(self.data_path, 'xtra', 'lrs', '')#self.data_path + 'xtra/lrs/'
         self.files = {}
         self.clock_lim = {}
+        self.epoch_lim = {}
         self.lat_lim = {}
         self.lon_lim = {}
         self.initialize_hierarchy()
@@ -199,18 +201,19 @@ class Env:
         """
         for product in self.files.keys():
             self.clock_lim[product] = {}
+            self.epoch_lim[product] = {}
             self.lat_lim[product] = {}
             self.lon_lim[product] = {}
             for name in self.files[product].keys():
-                if '.lbl' in self.files[product][name]:
-                    lbl_filenames = [file for file in self.files[product][name]]
+                lbl_filenames = [file for file in self.files[product][name] if '.lbl' in file]
+                if lbl_filenames:
                     lbl_filename = lbl_filenames[0]
                     # Clock
-                    lim1 = read.lbl_keyword(lbl_filename, 
-                                            'SPACECRAFT_CLOCK_START_COUNT')
-                    lim2 = read.lbl_keyword(lbl_filename, 
-                                            'SPACECRAFT_CLOCK_STOP_COUNT')
+                    lim1 = read.lbl_keyword(lbl_filename, 'START_TIME')
+                    lim2 = read.lbl_keyword(lbl_filename, 'STOP_TIME')
                     self.clock_lim[product][name] = [lim1, lim2]
+                    self.epoch_lim[product][name] = [datetime.strptime(lim1, "%Y-%m-%dT%H:%M:%S").timestamp(),
+                                                     datetime.strptime(lim2, "%Y-%m-%dT%H:%M:%S").timestamp()]
                     # Latitude
                     lim1 = read.lbl_keyword(lbl_filename, 
                                             'START_SUB_SPACECRAFT_LATITUDE')
