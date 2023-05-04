@@ -192,9 +192,7 @@ class Env:
                          f' {str(len(img_files)):>7} {str(len(anc_files)):>7}' + 
                          f' {str(len(srf_files)):>7} {str(len(sim_files)):>7}'
                         )
-            #logging.info(' ' + product + ' has ' + 
-            #             str(len(lbl_files)) + ' .lbl and ' + 
-            #             str(len(img_files)) + ' .img files')
+            
 
     def read_labels(self):
         """ Read and store in the Class some parameters from the label files
@@ -313,6 +311,32 @@ class Env:
             return out.to_dict(orient='list')
         else:
             logging.warning('No srf data for ' + product + ' ' + name)
+   
+        
+    def sim_data(self, product, name, method='gerekos2018'):
+        """ Read sim data.
+        
+        ARGUMENT
+        --------
+        product: string
+            product full name or substring (e.g., sar05)
+        name: string
+            file identifier (e.g., '20071221033918')
+            
+        RETURN
+        ------
+        
+        """
+        product = self.product_match(product)
+        _files = self.files[product][name]
+        files = [file for file in _files if method in file]
+        sim_filenames = [file for file in files if os.path.join('sim','') in file]
+        
+        if sim_filenames:
+            out = np.loadtxt(sim_filenames[0], delimiter=",", dtype='float')
+            return out
+        else:
+            logging.warning('No sim data for ' + product + ' ' + name)
             
         
     def tracks_intersecting_latlon_box(self, boxlats, boxlons, sampling=10e3,
