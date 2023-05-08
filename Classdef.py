@@ -10,6 +10,7 @@ LRS.orbit_data(orbitname)
 import os
 import sys
 import glob
+import copy
 import logging
 import numpy as np
 import pandas as pd
@@ -273,6 +274,8 @@ class Env:
         
         """
         product = self.product_match(product)
+        if product == 'sln-l-lrs-5-sndr-ss-nfoc-power-v1.0':
+            product = 'sln-l-lrs-5-sndr-ss-high-v2.0'
         files = self.files[product][name]
         anc_filenames = [file for file in files if os.path.join('anc','') in file]
         
@@ -364,11 +367,8 @@ class Env:
             time2s = self.epoch_lim[product2][name2]
             if (time2s[0] <= time1s[0] <= time2s[1]) or (time2s[0] <= time1s[1] <= time2s[1]):
                 return name2
-        
-        #return name2
     
     
-        
     def tracks_intersecting_latlon_box(self, boxlats, boxlons, sampling=10e3,
                                        download=False):
         """ Return identifiers of tracks crossing a box bounded by latitudes
@@ -400,7 +400,8 @@ class Env:
                ]
         poly = Polygon(box)
 
-        products = self.index_products()
+        products = copy.deepcopy(self.index_products())
+        products.remove('sln-l-lrs-5-sndr-ss-nfoc-power-v1.0')
         out = []
         for product in products:
             for track in self.files[product].keys():
@@ -535,7 +536,7 @@ class Env:
         #             archive=archive, delete=delete, **kwargs)
 
             
-    def plt_rdg(self, product, name, ax=None, latlim=None,
+    def plt_rdg(self, product, name, sim=False, ax=None, latlim=None,
                 title=None, invertx=False, **kwargs):
         """ Plot a LRS radargram
         
@@ -545,6 +546,8 @@ class Env:
             product full name or substring (e.g., sar05)
         name: string
             file identifier (e.g., '20071221033918')
+        sim: binary
+            Wether you want the simulation product for this track
         latlim: [float, float]
             latitude boundary
         ax: ax Object
@@ -568,8 +571,10 @@ class Env:
         """
         # Data
         # ----
-    
-        img = self.orig_data(product, name)['IMG_pdb']
+        if sim:
+            img = self.sim_data(product, name)
+        else:
+            img = self.orig_data(product, name)['IMG_pdb']
         anc = self.anc_data(product, name)
         #xlim = np.sort((np.where(anc['latitude'] <= latlim[0])[0][0], 
         #                np.where(anc['latitude'] <= latlim[1])[0][0]))
