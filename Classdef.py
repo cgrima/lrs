@@ -245,17 +245,16 @@ class Env:
         """
         product = self.product_match(product)
         files = self.files[product][name]
-        try:
-            lbl_filename = [file for file in files if '.lbl' in file][0]
-            img_filename = [file for file in files if '.img' in file][0]
-        except IndexError:
-            logging.debug('No orig data for ' + product + ' ' + name)
-        else:
+        lbl_filename = [file for file in files if '.lbl' in file][0]
+        img_filename = [file for file in files if '.img' in file][0]
+        if img_filename and lbl_filename:
             anc, img = read.img(img_filename, lbl_filename)
             out = anc.to_dict(orient='list')
             out.update({'IMG':img})
             out.update({'IMG_pdb':self.signalconversion(product, name, img)})
             return out#.update({'DATA':img})
+        else:
+            logging.warning('No orig data for ' + product + ' ' + name)
 
         
     def anc_data(self, product, name):
