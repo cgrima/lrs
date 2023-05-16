@@ -18,6 +18,7 @@ import requests
 import urllib
 from datetime import datetime
 from shapely.geometry import Point, Polygon
+from scipy.interpolate import UnivariateSpline
 from joblib import Parallel, delayed
 from pyproj import CRS
 from pyproj import Transformer
@@ -680,6 +681,254 @@ class Env:
             lat = anc['latitude']
         x, y = transformer.transform(lon, lat)
         return x, y#{'x':x, 'y':y}
+   
+
+
+        
+class Track():
+    """ Class for getting info on a groundtrack segment
+    """
+    def __init__(self, LRS, name, latlim=[-80,-70], download=False):
+        """ Get various parameters defining the dataset
+        
+        ARGUMENTS
+        ---------
+        LRS: Class
+            LRS class
+        name: string
+            Name of a SWH file
+        latlim: [float, float]
+            latitude min/max boundaries
+        """
+        self.LRS = LRS
+        self.latlim = latlim
+        # Products
+        self.swh = {'product':'sln-l-lrs-5-sndr-ss-high-v2.0'}
+        self.swh_sim = {'product':'sln-l-lrs-5-sndr-ss-high-v2.0'}
+        self.sar05 = {'product':'sln-l-lrs-5-sndr-ss-sar05-power-v1.0'}
+        self.sar10 = {'product':'sln-l-lrs-5-sndr-ss-sar10-power-v1.0'}
+        self.sar40 = {'product':'sln-l-lrs-5-sndr-ss-sar40-power-v1.0'}
+        self.nfoc_sim = {'product':'sln-l-lrs-5-sndr-ss-nfoc-power-v1.0'}
+        # Names
+        self.swh['name'] = name
+        self.swh_sim['name'] = self.swh['name']
+        self.sar05['name'] = LRS.matching_track(self.swh['product'], 
+                                                self.swh['name'], 
+                                                self.sar05['product'])
+        self.sar10['name'] = LRS.matching_track(self.swh['product'], 
+                                                self.swh['name'], 
+                                                self.sar10['product'])
+        self.sar40['name'] = LRS.matching_track(self.swh['product'], 
+                                                self.swh['name'], 
+                                                self.sar40['product'])
+        self.nfoc_sim['name'] = self.swh['name']
+        # Download
+        if download == True:
+            self.download()
+        # Indices
+        self.idx = LRS.wherelat(self.swh['product'], self.swh['name'], self.latlim)
+        self.index()
+        # Ancilliary data
+        self.anc = LRS.anc_data(self.swh['product'], self.swh['name'])
+        self.latitude = np.array(self.anc['latitude'])[self.idx]
+        self.longitude = np.array(self.anc['longitude'])[self.idx]
+        self.altitude = np.array(self.anc['altitude'])[self.idx]
+        self.range0 = np.array(self.anc['range0'])[self.idx]
+        self.date = np.array(self.anc['date'])[self.idx]
+        self.time = np.array(self.anc['time'])[self.idx]
+        # Surface
+        self.surface()
+        # Range Shift
+        self.range_shift()
+        # Radargrams
+        self.rdg()
+    
+    
+    def download(self):
+        
+        for ext in ['lbl', 'img']:
+            _ = LRS.download(self.swh['product'], self.swh['name'], typ=ext)
+            _ = LRS.download(self.sar05['product'], self.sar05['name'], typ=ext)
+            _ = LRS.download(self.sar10['product'], self.sar10['name'], typ=ext)
+            _ = LRS.download(self.sar40['product'], self.sar40['name'], typ=ext)
+            
+        self.LRS = lrs.Classdef.Env()
+    
+    
+    def index(self):
+        """Indices within latlim for each products
+        """
+        idx_binary = self.LRS.wherelat(self.swh['product'], self.swh['name'], self.latlim)
+        self.swh['index'] = np.arange( len(idx_binary) )[idx_binary]
+        self.swh_sim['index'] = self.swh['index']
+        
+        idx_binary = self.LRS.wherelat(self.sar05['product'], self.sar05['name'], self.latlim)
+        idx0 = next((i for i, element in enumerate(idx_binary) if element == True), -1)
+        self.sar05['index'] = np.arange(len(self.swh['index'])) + idx0
+        
+        idx_binary = self.LRS.wherelat(self.sar10['product'], self.sar10['name'], self.latlim)
+        idx0 = next((i for i, element in enumerate(idx_binary) if element == True), -1)
+        self.sar10['index'] = np.arange(len(self.swh['index'])) + idx0
+        
+        idx_binary = self.LRS.wherelat(self.sar40['product'], self.sar40['name'], self.latlim)
+        idx0 = next((i for i, element in enumerate(idx_binary) if element == True), -1)
+        self.sar40['index'] = np.arange(len(self.swh['index'])) + idx0
+        
+        self.nfoc_sim['index'] = self.swh['index']
+    
+    
+    def surface(self):
+        """ Surface echo
+        """
+        self.swh['srf'] = {}
+        self.sar05['srf'] = {}
+        self.sar10['srf'] = {}
+        self.sar40['srf'] = {}
+        for method in ['mouginot2010', 'grima2012']:
+            self.swh['srf'][method] = {}
+            self.sar05['srf'][method] = {}
+            self.sar10['srf'][method] = {}
+            self.sar40['srf'][method] = {}
+            for n in ['y', 'pdb']:
+                l = len(self.swh['index'])
+                
+                arr = self.LRS.srf_data(self.swh['product'], self.swh['name'], 
+                                        method=method)[n][self.swh['index'][0]:self.swh['index'][0]+l]
+                self.swh['srf'][method][n] = np.array(arr)
+                
+                arr = self.LRS.srf_data(self.sar05['product'], self.sar05['name'], 
+                                        method=method)[n][self.sar05['index'][0]:self.sar05['index'][0]+l]
+                self.sar05['srf'][method][n] = np.array(arr)
+                
+                arr = self.LRS.srf_data(self.sar10['product'], self.sar10['name'], 
+                                        method=method)[n][self.sar10['index'][0]:self.sar10['index'][0]+l]
+                self.sar10['srf'][method][n] = np.array(arr)
+                
+                arr = self.LRS.srf_data(self.sar40['product'], self.sar40['name'], 
+                                        method=method)[n][self.sar40['index'][0]:self.sar40['index'][0]+l]
+                self.sar40['srf'][method][n] = np.array(arr)
+                
+            # Upsampling to match 24m/pixel in range (i.e., same as far)
+            self.swh['srf'][method]['y'] = self.swh['srf'][method]['y']*2
+    
+    
+    def range_shift(self, s=3e6):
+        """ Range shit for SAR data
+        """
+        
+        # Get surface picks
+        y = self.swh['srf']['mouginot2010']['y']
+        x = np.arange(len(y))
+        
+        f = UnivariateSpline(x, y, s=s)
+        y_smooth = f(x)
+        
+        y_constant_shift = np.full(len(y), 400-np.mean(y), dtype=int)
+        y_constant_shift_sim = np.full(len(y), -900, dtype=int)
+        y_spline_shift = np.array(y_smooth, dtype=int)-200
+        
+        self.swh['range_shift'] = y_constant_shift
+        self.swh_sim['range_shift'] = y_constant_shift_sim
+        self.nfoc_sim['range_shift'] = y_constant_shift_sim
+        self.sar05['range_shift'] = y_constant_shift + y_spline_shift
+        self.sar10['range_shift'] = self.sar05['range_shift']
+        self.sar40['range_shift'] = self.sar05['range_shift']
+    
+    
+    def km(self):
+        """ Kilometers along the track
+        """
+        pass
+    
+    
+    def rdg(self):
+        """ Radargrams
+        """
+        l = len(self.swh['index'])
+        rdg = self.LRS.orig_data(self.swh['product'], self.swh['name'])['IMG_pdb']
+        # Upsampling to match 24m/pixel in range (i.e., same as far)
+        rdg = rdg.repeat(2, axis=0)
+        self.swh['rdg'] = rdg[:,self.swh['index'][0]:self.swh['index'][0]+l]
+        
+        rdg = self.LRS.sim_data(self.swh_sim['product'], self.swh_sim['name'])
+        self.swh_sim['rdg'] = rdg[:,self.swh_sim['index'][0]:self.swh_sim['index'][0]+l]
+        
+        rdg = self.LRS.orig_data(self.sar05['product'], self.sar05['name'])['IMG_pdb']
+        self.sar05['rdg'] = rdg[:,self.sar05['index'][0]:self.sar05['index'][0]+l]
+        
+        rdg = self.LRS.orig_data(self.sar10['product'], self.sar10['name'])['IMG_pdb']
+        self.sar10['rdg'] = rdg[:,self.sar10['index'][0]:self.sar10['index'][0]+l]
+        
+        rdg = self.LRS.orig_data(self.sar40['product'], self.sar40['name'])['IMG_pdb']
+        self.sar40['rdg'] = rdg[:,self.sar40['index'][0]:self.sar40['index'][0]+l]
+        
+        rdg = self.LRS.sim_data(self.nfoc_sim['product'], self.nfoc_sim['name'])
+        self.nfoc_sim['rdg'] = rdg[:,self.nfoc_sim['index'][0]:self.nfoc_sim['index'][0]+l]
+        
+        # Shift radargrams
+        for i in np.arange(l):
+            self.swh['rdg'][:, i] = np.roll(self.swh['rdg'][:, i], self.swh['range_shift'][i])
+            self.swh_sim['rdg'][:, i] = np.roll(self.swh_sim['rdg'][:, i], self.swh_sim['range_shift'][i])
+            self.nfoc_sim['rdg'][:, i] = np.roll(self.nfoc_sim['rdg'][:, i], self.nfoc_sim['range_shift'][i])
+            self.sar05['rdg'][:, i] = np.roll(self.sar05['rdg'][:, i], self.sar05['range_shift'][i])
+            self.sar10['rdg'][:, i] = np.roll(self.sar10['rdg'][:, i], self.sar10['range_shift'][i])
+            self.sar40['rdg'][:, i] = np.roll(self.sar40['rdg'][:, i], self.sar40['range_shift'][i])
+    
+    
+    def stereo(self, crs_lonlat = '+proj=longlat +R=1737400 +no_defs',
+              crs_stereo = '+proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs +type=crs'):
+        """ Convert longitude/latitude to xy stereographic
+        """
+        transformer = Transformer.from_crs(CRS.from_string(crs_lonlat), 
+                                           CRS.from_proj4(crs_stereo))
+        x, y = transformer.transform(self.longitude, self.latitude)
+        return x, y#{'x':x, 'y':y}
+
+    
+    def browse(self, cmap='gray_r'):
+        """
+        """
+        products = [self.swh['product'],
+                    self.sar05['product'],
+                    self.sar10['product'],
+                    self.sar40['product'],
+                   ]
+        names = [self.swh['name'],
+                 self.sar05['name'],
+                 self.sar10['name'],
+                 self.sar40['name'],
+                ]
+    
+        fig, axes = plt.subplot_mosaic(
+            [[products[0]],
+             [products[1]],
+             [products[2]], 
+             [products[3]], 
+            ], constrained_layout=True, figsize=(19,9)
+            )#figsize=(19,9), constrained_layout=True, dpi=500)
+        fig.set_size_inches(16, 8)
+        fig.set_dpi(500)
+        
+        # ----------
+        # Radargrams
+        # ----------
+    
+        axes[products[0]].imshow(self.swh['rdg'], cmap=cmap, vmin=-130, vmax=-80)
+        axes[products[1]].imshow(self.sar05['rdg'], cmap=cmap, vmin=-10, vmax=40)
+        axes[products[2]].imshow(self.sar10['rdg'], cmap=cmap, vmin=-10, vmax=40)
+        axes[products[3]].imshow(self.sar40['rdg'], cmap=cmap, vmin=-10, vmax=40)
+             
+        for i in [0,1,2,3]:
+            axes[products[i]].set_title(f'{products[i]} - {names[i]}', y=.86)
+            axes[products[i]].set_yticks(np.arange(0,3000, 1000/24))
+            axes[products[i]].set_yticklabels([])
+            if i != 0:
+                axes[products[i]].sharey(axes[products[0]])
+            #axes[products[i]].set_xlabel('bin #')
+    
+        axes[products[0]].set_ylim([1000,0])
+        #axes[products[1]].set_ylim([1000,0])
+        #axes[products[2]].set_ylim([1900,900])
         
         
 if __name__ == "__main__":
