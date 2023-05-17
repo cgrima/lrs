@@ -882,7 +882,7 @@ class Track():
         transformer = Transformer.from_crs(CRS.from_string(crs_lonlat), 
                                            CRS.from_proj4(crs_stereo))
         x, y = transformer.transform(self.longitude, self.latitude)
-        return x, y#{'x':x, 'y':y}
+        return np.array(x), np.array(y)#{'x':x, 'y':y}
 
     
     def browse(self, cmap='gray_r'):
