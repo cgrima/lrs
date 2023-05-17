@@ -660,6 +660,50 @@ class Env:
         out = (vec >= np.min(lim)) & (vec <= np.max(lim))
         
         return out
+        
+        
+    def wherelon(self, product, name, lim):
+        """ return a binary vector indicating where longitudes 
+        are within the indicated limits
+    
+        ARGUMENTS
+        ---------
+        lim: [float, float]
+            longitude limits
+        
+        RETURN
+        ------
+        Binary vector
+        """
+        anc = self.anc_data(product, name)
+        vec = np.array(anc['longitude'])
+        out = (vec >= np.min(lim)) & (vec <= np.max(lim))
+        
+        return out
+        
+        
+    def wherelatlon(self, product, name, latlim, lonlim):
+        """ return a binary vector indicating where longitudes 
+        are within the indicated limits
+    
+        ARGUMENTS
+        ---------
+        latlim: [float, float]
+            latitude limits
+            
+        lonlim: [float, float]
+            longitude limits
+        
+        RETURN
+        ------
+        Binary vector
+        """
+        anc = self.anc_data(product, name)
+        vec_lat = np.array(anc['latitude'])
+        vec_lon = np.array(anc['longitude'])
+        out = (vec_lat >= np.min(latlim)) & (vec_lat <= np.max(latlim)) & (vec_lon >= np.min(lonlim)) & (vec_lon <= np.max(lonlim))
+        
+        return out
 
     
     def lonlat2stereo(self, product, name, sampling=1000e3, use_anc=False):
@@ -680,7 +724,7 @@ class Env:
             lon = anc['longitude']
             lat = anc['latitude']
         x, y = transformer.transform(lon, lat)
-        return x, y#{'x':x, 'y':y}
+        return x, y
    
 
 
@@ -688,7 +732,7 @@ class Env:
 class Track():
     """ Class for getting info on a groundtrack segment
     """
-    def __init__(self, LRS, name, latlim=[-80,-70], get_missing=False):
+    def __init__(self, LRS, name, latlim=[-80,-70], lonlim=[0,360], get_missing=False):
         """ Get various parameters defining the dataset
         
         ARGUMENTS
@@ -702,6 +746,7 @@ class Track():
         """
         self.LRS = LRS
         self.latlim = latlim
+        self.lonlim = lonlim
         # Products
         self.swh = {'product':'sln-l-lrs-5-sndr-ss-high-v2.0'}
         self.swh_sim = {'product':'sln-l-lrs-5-sndr-ss-high-v2.0'}
@@ -726,7 +771,8 @@ class Track():
         if get_missing == True:
             self.get_missing()
         # Indices
-        self.idx = LRS.wherelat(self.swh['product'], self.swh['name'], self.latlim)
+        self.idx = LRS.wherelatlon(self.swh['product'], self.swh['name'], self.latlim, self.lonlim)
+        self.length = len(self.idx[self.idx == True])
         self.index()
         # Ancilliary data
         self.anc = LRS.anc_data(self.swh['product'], self.swh['name'])
@@ -771,23 +817,30 @@ class Track():
         
     
     def index(self):
-        """Indices within latlim for each products
+        """Indices within latlim and lonlim for each products
         """
-        idx_binary = self.LRS.wherelat(self.swh['product'], self.swh['name'], self.latlim)
+        #idx_binary = self.LRS.wherelat(self.swh['product'], self.swh['name'], self.latlim)
+        idx_binary = self.LRS.wherelatlon(self.swh['product'], self.swh['name'], self.latlim, self.lonlim)
         self.swh['index'] = np.arange( len(idx_binary) )[idx_binary]
         self.swh_sim['index'] = self.swh['index']
         
-        idx_binary = self.LRS.wherelat(self.sar05['product'], self.sar05['name'], self.latlim)
+        #idx_binary = self.LRS.wherelat(self.sar05['product'], self.sar05['name'], self.latlim)
+        idx_binary = self.LRS.wherelatlon(self.sar05['product'], self.sar05['name'], self.latlim, self.lonlim)
         idx0 = next((i for i, element in enumerate(idx_binary) if element == True), -1)
-        self.sar05['index'] = np.arange(len(self.swh['index'])) + idx0
+        #self.sar05['index'] = np.arange(len(self.swh['index'])) + idx0
+        self.sar05['index'] = np.arange(idx0, idx0+self.length, 1)
         
-        idx_binary = self.LRS.wherelat(self.sar10['product'], self.sar10['name'], self.latlim)
+        #idx_binary = self.LRS.wherelat(self.sar10['product'], self.sar10['name'], self.latlim)
+        idx_binary = self.LRS.wherelatlon(self.sar10['product'], self.sar10['name'], self.latlim, self.lonlim)
         idx0 = next((i for i, element in enumerate(idx_binary) if element == True), -1)
-        self.sar10['index'] = np.arange(len(self.swh['index'])) + idx0
+        #self.sar10['index'] = np.arange(len(self.swh['index'])) + idx0
+        self.sar10['index'] = np.arange(idx0, idx0+self.length, 1)
         
-        idx_binary = self.LRS.wherelat(self.sar40['product'], self.sar40['name'], self.latlim)
+        #idx_binary = self.LRS.wherelat(self.sar40['product'], self.sar40['name'], self.latlim)
+        idx_binary = self.LRS.wherelatlon(self.sar40['product'], self.sar40['name'], self.latlim, self.lonlim)
         idx0 = next((i for i, element in enumerate(idx_binary) if element == True), -1)
-        self.sar40['index'] = np.arange(len(self.swh['index'])) + idx0
+        #self.sar40['index'] = np.arange(len(self.swh['index'])) + idx0
+        self.sar40['index'] = np.arange(idx0, idx0+self.length, 1)
         
         self.nfoc_sim['index'] = self.swh['index']
     
