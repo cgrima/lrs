@@ -773,7 +773,6 @@ class Track():
         # Indices
         self.idx = LRS.wherelatlon(self.swh['product'], self.swh['name'], self.latlim, self.lonlim)
         self.length = len(self.idx[self.idx == True])
-        self.index()
         # Ancilliary data
         self.anc = LRS.anc_data(self.swh['product'], self.swh['name'])
         self.latitude = np.array(self.anc['latitude'])[self.idx]
@@ -782,6 +781,8 @@ class Track():
         self.range0 = np.array(self.anc['range0'])[self.idx]
         self.date = np.array(self.anc['date'])[self.idx]
         self.time = np.array(self.anc['time'])[self.idx]
+        # Non-swh indices
+        self.index()
         # Surface
         self.surface()
         # Range Shift
@@ -824,22 +825,13 @@ class Track():
         self.swh['index'] = np.arange( len(idx_binary) )[idx_binary]
         self.swh_sim['index'] = self.swh['index']
         
-        #idx_binary = self.LRS.wherelat(self.sar05['product'], self.sar05['name'], self.latlim)
-        idx_binary = self.LRS.wherelatlon(self.sar05['product'], self.sar05['name'], self.latlim, self.lonlim)
-        idx0 = next((i for i, element in enumerate(idx_binary) if element == True), -1)
-        #self.sar05['index'] = np.arange(len(self.swh['index'])) + idx0
+        idx0 = np.where(self.LRS.anc_data(self.sar05['product'], self.sar05['name'])['time'] > self.time[0])[0][0]
         self.sar05['index'] = np.arange(idx0, idx0+self.length, 1)
         
-        #idx_binary = self.LRS.wherelat(self.sar10['product'], self.sar10['name'], self.latlim)
-        idx_binary = self.LRS.wherelatlon(self.sar10['product'], self.sar10['name'], self.latlim, self.lonlim)
-        idx0 = next((i for i, element in enumerate(idx_binary) if element == True), -1)
-        #self.sar10['index'] = np.arange(len(self.swh['index'])) + idx0
+        idx0 = np.where(self.LRS.anc_data(self.sar10['product'], self.sar10['name'])['time'] > self.time[0])[0][0]
         self.sar10['index'] = np.arange(idx0, idx0+self.length, 1)
         
-        #idx_binary = self.LRS.wherelat(self.sar40['product'], self.sar40['name'], self.latlim)
-        idx_binary = self.LRS.wherelatlon(self.sar40['product'], self.sar40['name'], self.latlim, self.lonlim)
-        idx0 = next((i for i, element in enumerate(idx_binary) if element == True), -1)
-        #self.sar40['index'] = np.arange(len(self.swh['index'])) + idx0
+        idx0 = np.where(self.LRS.anc_data(self.sar40['product'], self.sar40['name'])['time'] > self.time[0])[0][0]
         self.sar40['index'] = np.arange(idx0, idx0+self.length, 1)
         
         self.nfoc_sim['index'] = self.swh['index']
