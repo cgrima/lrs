@@ -688,7 +688,7 @@ class Env:
 class Track():
     """ Class for getting info on a groundtrack segment
     """
-    def __init__(self, LRS, name, latlim=[-80,-70], download=False):
+    def __init__(self, LRS, name, latlim=[-80,-70], get_missing=False):
         """ Get various parameters defining the dataset
         
         ARGUMENTS
@@ -723,8 +723,8 @@ class Track():
                                                 self.sar40['product'])
         self.nfoc_sim['name'] = self.swh['name']
         # Download
-        if download == True:
-            self.download()
+        if get_missing == True:
+            self.get_missing()
         # Indices
         self.idx = LRS.wherelat(self.swh['product'], self.swh['name'], self.latlim)
         self.index()
@@ -744,16 +744,31 @@ class Track():
         self.rdg()
     
     
-    def download(self):
+    def get_missing(self):
         
+        # Download orig files
         for ext in ['lbl', 'img']:
-            _ = LRS.download(self.swh['product'], self.swh['name'], typ=ext)
-            _ = LRS.download(self.sar05['product'], self.sar05['name'], typ=ext)
-            _ = LRS.download(self.sar10['product'], self.sar10['name'], typ=ext)
-            _ = LRS.download(self.sar40['product'], self.sar40['name'], typ=ext)
-            
-        self.LRS = lrs.Classdef.Env()
-    
+            _ = self.LRS.download(self.swh['product'], self.swh['name'], typ=ext)
+            _ = self.LRS.download(self.sar05['product'], self.sar05['name'], typ=ext)
+            _ = self.LRS.download(self.sar10['product'], self.sar10['name'], typ=ext)
+            _ = self.LRS.download(self.sar40['product'], self.sar40['name'], typ=ext)
+        self.LRS = Env()
+        
+        # anc processing
+        _ = self.LRS.run('anc', self.swh['product'], self.swh['name'], archive=True)
+        _ = self.LRS.run('anc', self.sar05['product'], self.sar05['name'], archive=True)
+        _ = self.LRS.run('anc', self.sar10['product'], self.sar10['name'], archive=True)
+        _ = self.LRS.run('anc', self.sar40['product'], self.sar40['name'], archive=True)
+        self.LRS = Env()
+        
+        # srf processing
+        for method in ['mouginot2010', 'grima2012']:
+            _ = self.LRS.run('srf', self.swh['product'], self.swh['name'], method=method)
+            _ = self.LRS.run('srf', self.sar05['product'], self.sar05['name'], method=method)
+            _ = self.LRS.run('srf', self.sar10['product'], self.sar10['name'], method=method)
+            _ = self.LRS.run('srf', self.sar40['product'], self.sar40['name'], method=method)
+        self.LRS = Env()
+        
     
     def index(self):
         """Indices within latlim for each products
