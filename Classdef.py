@@ -932,9 +932,6 @@ class Track():
         rdg = rdg.repeat(2, axis=0)
         self.swh['rdg'] = rdg[:,self.swh['index'][0]:self.swh['index'][0]+l]
         
-        rdg = self.LRS.sim_data(self.swh_sim['product'], self.swh_sim['name'])
-        self.swh_sim['rdg'] = rdg[:,self.swh_sim['index'][0]:self.swh_sim['index'][0]+l]
-        
         rdg = self.LRS.orig_data(self.sar05['product'], self.sar05['name'])['IMG_pdb']
         self.sar05['rdg'] = rdg[:,self.sar05['index'][0]:self.sar05['index'][0]+l]
         
@@ -944,8 +941,17 @@ class Track():
         #rdg = self.LRS.orig_data(self.sar40['product'], self.sar40['name'])['IMG_pdb']
         #self.sar40['rdg'] = rdg[:,self.sar40['index'][0]:self.sar40['index'][0]+l]
         
-        rdg = self.LRS.sim_data(self.nfoc_sim['product'], self.nfoc_sim['name'])
-        self.nfoc_sim['rdg'] = rdg[:,self.nfoc_sim['index'][0]:self.nfoc_sim['index'][0]+l]
+        try: # No swh simulation avaialble
+            rdg = self.LRS.sim_data(self.swh_sim['product'], self.swh_sim['name'])
+            self.swh_sim['rdg'] = rdg[:,self.swh_sim['index'][0]:self.swh_sim['index'][0]+l]
+        except:
+            self.swh_sim['rdg'] = self.swh['rdg']*0-255
+        
+        try: # No nfoc simulation avaialble
+            rdg = self.LRS.sim_data(self.nfoc_sim['product'], self.nfoc_sim['name'])
+            self.nfoc_sim['rdg'] = rdg[:,self.nfoc_sim['index'][0]:self.nfoc_sim['index'][0]+l]
+        except:
+            self.nfoc_sim['rdg'] = self.swh['rdg']*0-255
         
         # Shift radargrams
         for i in np.arange(l):
