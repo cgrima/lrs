@@ -765,7 +765,7 @@ class Track():
         self.swh_sim = {'product':'sln-l-lrs-5-sndr-ss-high-v2.0'}
         self.sar05 = {'product':'sln-l-lrs-5-sndr-ss-sar05-power-v1.0'}
         self.sar10 = {'product':'sln-l-lrs-5-sndr-ss-sar10-power-v1.0'}
-        self.sar40 = {'product':'sln-l-lrs-5-sndr-ss-sar40-power-v1.0'}
+        #self.sar40 = {'product':'sln-l-lrs-5-sndr-ss-sar40-power-v1.0'}
         self.nfoc_sim = {'product':'sln-l-lrs-5-sndr-ss-nfoc-power-v1.0'}
         # Names
         self.swh['name'] = name
@@ -776,9 +776,9 @@ class Track():
         self.sar10['name'] = LRS.matching_track(self.swh['product'], 
                                                 self.swh['name'], 
                                                 self.sar10['product'])
-        self.sar40['name'] = LRS.matching_track(self.swh['product'], 
-                                                self.swh['name'], 
-                                                self.sar40['product'])
+        #self.sar40['name'] = LRS.matching_track(self.swh['product'], 
+        #                                        self.swh['name'], 
+        #                                        self.sar40['product'])
         self.nfoc_sim['name'] = self.swh['name']
         # Download
         if get_missing == True:
@@ -807,27 +807,27 @@ class Track():
     def get_missing(self):
         
         # Download orig files
-        for ext in ['lbl', 'img']:
-            _ = self.LRS.download(self.swh['product'], self.swh['name'], typ=ext)
-            _ = self.LRS.download(self.sar05['product'], self.sar05['name'], typ=ext)
-            _ = self.LRS.download(self.sar10['product'], self.sar10['name'], typ=ext)
-            _ = self.LRS.download(self.sar40['product'], self.sar40['name'], typ=ext)
-        self.LRS = Env()
+        #for ext in ['lbl', 'img']:
+        #    _ = self.LRS.download(self.swh['product'], self.swh['name'], typ=ext)
+        #    _ = self.LRS.download(self.sar05['product'], self.sar05['name'], typ=ext)
+        #    _ = self.LRS.download(self.sar10['product'], self.sar10['name'], typ=ext)
+        #    _ = self.LRS.download(self.sar40['product'], self.sar40['name'], typ=ext)
+        #self.LRS = Env()
         
         # anc processing
         _ = self.LRS.run('anc', self.swh['product'], self.swh['name'], archive=True)
         _ = self.LRS.run('anc', self.sar05['product'], self.sar05['name'], archive=True)
         _ = self.LRS.run('anc', self.sar10['product'], self.sar10['name'], archive=True)
-        _ = self.LRS.run('anc', self.sar40['product'], self.sar40['name'], archive=True)
-        self.LRS = Env()
+        #_ = self.LRS.run('anc', self.sar40['product'], self.sar40['name'], archive=True)
+        #self.LRS = Env()
         
         # srf processing
-        for method in ['mouginot2010', 'grima2012']:
-            _ = self.LRS.run('srf', self.swh['product'], self.swh['name'], method=method)
-            _ = self.LRS.run('srf', self.sar05['product'], self.sar05['name'], method=method)
-            _ = self.LRS.run('srf', self.sar10['product'], self.sar10['name'], method=method)
-            _ = self.LRS.run('srf', self.sar40['product'], self.sar40['name'], method=method)
-        self.LRS = Env()
+        #for method in ['mouginot2010', 'grima2012']:
+        #    _ = self.LRS.run('srf', self.swh['product'], self.swh['name'], method=method)
+        #    _ = self.LRS.run('srf', self.sar05['product'], self.sar05['name'], method=method)
+        #    _ = self.LRS.run('srf', self.sar10['product'], self.sar10['name'], method=method)
+        #    _ = self.LRS.run('srf', self.sar40['product'], self.sar40['name'], method=method)
+        #self.LRS = Env()
         
     
     def index(self):
@@ -844,8 +844,8 @@ class Track():
         idx0 = np.where(self.LRS.anc_data(self.sar10['product'], self.sar10['name'])['time'] > self.time[0])[0][0]
         self.sar10['index'] = np.arange(idx0, idx0+self.length, 1)
         
-        idx0 = np.where(self.LRS.anc_data(self.sar40['product'], self.sar40['name'])['time'] > self.time[0])[0][0]
-        self.sar40['index'] = np.arange(idx0, idx0+self.length, 1)
+        #idx0 = np.where(self.LRS.anc_data(self.sar40['product'], self.sar40['name'])['time'] > self.time[0])[0][0]
+        #self.sar40['index'] = np.arange(idx0, idx0+self.length, 1)
         
         self.nfoc_sim['index'] = self.swh['index']
     
@@ -856,12 +856,12 @@ class Track():
         self.swh['srf'] = {}
         self.sar05['srf'] = {}
         self.sar10['srf'] = {}
-        self.sar40['srf'] = {}
+        #self.sar40['srf'] = {}
         for method in ['mouginot2010', 'grima2012']:
             self.swh['srf'][method] = {}
             self.sar05['srf'][method] = {}
             self.sar10['srf'][method] = {}
-            self.sar40['srf'][method] = {}
+            #self.sar40['srf'][method] = {}
             for n in ['y', 'pdb']:
                 l = len(self.swh['index'])
                 
@@ -877,9 +877,9 @@ class Track():
                                         method=method)[n][self.sar10['index'][0]:self.sar10['index'][0]+l]
                 self.sar10['srf'][method][n] = np.array(arr)
                 
-                arr = self.LRS.srf_data(self.sar40['product'], self.sar40['name'], 
-                                        method=method)[n][self.sar40['index'][0]:self.sar40['index'][0]+l]
-                self.sar40['srf'][method][n] = np.array(arr)
+                #arr = self.LRS.srf_data(self.sar40['product'], self.sar40['name'], 
+                #                        method=method)[n][self.sar40['index'][0]:self.sar40['index'][0]+l]
+                #self.sar40['srf'][method][n] = np.array(arr)
                 
             # Upsampling to match 24m/pixel in range (i.e., same as far)
             self.swh['srf'][method]['y'] = self.swh['srf'][method]['y']*2
@@ -905,7 +905,7 @@ class Track():
         self.nfoc_sim['range_shift'] = y_constant_shift_sim
         self.sar05['range_shift'] = y_constant_shift + y_spline_shift
         self.sar10['range_shift'] = self.sar05['range_shift']
-        self.sar40['range_shift'] = self.sar05['range_shift']
+        #self.sar40['range_shift'] = self.sar05['range_shift']
     
     
     def distance(self, vec=False):
@@ -941,20 +941,23 @@ class Track():
         rdg = self.LRS.orig_data(self.sar10['product'], self.sar10['name'])['IMG_pdb']
         self.sar10['rdg'] = rdg[:,self.sar10['index'][0]:self.sar10['index'][0]+l]
         
-        rdg = self.LRS.orig_data(self.sar40['product'], self.sar40['name'])['IMG_pdb']
-        self.sar40['rdg'] = rdg[:,self.sar40['index'][0]:self.sar40['index'][0]+l]
+        #rdg = self.LRS.orig_data(self.sar40['product'], self.sar40['name'])['IMG_pdb']
+        #self.sar40['rdg'] = rdg[:,self.sar40['index'][0]:self.sar40['index'][0]+l]
         
         rdg = self.LRS.sim_data(self.nfoc_sim['product'], self.nfoc_sim['name'])
         self.nfoc_sim['rdg'] = rdg[:,self.nfoc_sim['index'][0]:self.nfoc_sim['index'][0]+l]
         
         # Shift radargrams
         for i in np.arange(l):
-            self.swh['rdg'][:, i] = np.roll(self.swh['rdg'][:, i], self.swh['range_shift'][i])
-            self.swh_sim['rdg'][:, i] = np.roll(self.swh_sim['rdg'][:, i], self.swh_sim['range_shift'][i])
-            self.nfoc_sim['rdg'][:, i] = np.roll(self.nfoc_sim['rdg'][:, i], self.nfoc_sim['range_shift'][i])
-            self.sar05['rdg'][:, i] = np.roll(self.sar05['rdg'][:, i], self.sar05['range_shift'][i])
-            self.sar10['rdg'][:, i] = np.roll(self.sar10['rdg'][:, i], self.sar10['range_shift'][i])
-            self.sar40['rdg'][:, i] = np.roll(self.sar40['rdg'][:, i], self.sar40['range_shift'][i])
+            try:
+                self.swh['rdg'][:, i] = np.roll(self.swh['rdg'][:, i], self.swh['range_shift'][i])
+                self.swh_sim['rdg'][:, i] = np.roll(self.swh_sim['rdg'][:, i], self.swh_sim['range_shift'][i])
+                self.nfoc_sim['rdg'][:, i] = np.roll(self.nfoc_sim['rdg'][:, i], self.nfoc_sim['range_shift'][i])
+                self.sar05['rdg'][:, i] = np.roll(self.sar05['rdg'][:, i], self.sar05['range_shift'][i])
+                self.sar10['rdg'][:, i] = np.roll(self.sar10['rdg'][:, i], self.sar10['range_shift'][i])
+                #self.sar40['rdg'][:, i] = np.roll(self.sar40['rdg'][:, i], self.sar40['range_shift'][i])
+            except:
+                pass
     
     
     def stereo(self, crs_lonlat = '+proj=longlat +R=1737400 +no_defs',
@@ -985,7 +988,7 @@ class Track():
             [[products[0]],
              [products[1]],
              [products[2]], 
-             [products[3]], 
+             #[products[3]], 
             ], constrained_layout=True, figsize=(19,9)
             )#figsize=(19,9), constrained_layout=True, dpi=500)
         fig.set_size_inches(16, 8)
@@ -998,9 +1001,9 @@ class Track():
         axes[products[0]].imshow(self.swh['rdg'], cmap=cmap, vmin=-130, vmax=-80)
         axes[products[1]].imshow(self.sar05['rdg'], cmap=cmap, vmin=-10, vmax=40)
         axes[products[2]].imshow(self.sar10['rdg'], cmap=cmap, vmin=-10, vmax=40)
-        axes[products[3]].imshow(self.sar40['rdg'], cmap=cmap, vmin=-10, vmax=40)
+        #axes[products[3]].imshow(self.sar40['rdg'], cmap=cmap, vmin=-10, vmax=40)
              
-        for i in [0,1,2,3]:
+        for i in [0,1,2]:
             axes[products[i]].set_title(f'{products[i]} - {names[i]}', y=.86)
             axes[products[i]].set_yticks(np.arange(0,3000, 1000/24))
             axes[products[i]].set_yticklabels([])
