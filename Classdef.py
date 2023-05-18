@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import requests
 import urllib
+import pyproj
 from datetime import datetime
 from shapely.geometry import Point, Polygon
 from scipy.interpolate import UnivariateSpline
@@ -727,6 +728,18 @@ class Env:
         return x, y
    
 
+    def distance(self, product, name, sampling=1000e3):
+        """ Give distance in meters between first and last points
+        """
+        moon_radius = 1737400
+        geod = pyproj.Geod(ellps="sphere", a=moon_radius, b=moon_radius)
+        
+        latlim = self.lat_lim[product][name]
+        lonlim = self.lon_lim[product][name]
+        
+        _, _, forward_distance = geod.inv(lonlim[0], latlim[0], lonlim[1], latlim[1])
+        
+        return forward_distance
 
         
 class Track():
@@ -895,10 +908,19 @@ class Track():
         self.sar40['range_shift'] = self.sar05['range_shift']
     
     
-    def km(self):
-        """ Kilometers along the track
+    def distance(self, vec=False):
+        """ Distance between start and end points
         """
-        pass
+        moon_radius = 1737400
+        geod = pyproj.Geod(a=moon_radius, b=moon_radius)
+        
+        _, _, forward_distance = geod.inv(self.longitude[0], self.latitude[0], 
+                                          self.longitude[-1], self.latitude[-1])
+        out = forward_distance
+        if vec:
+            out = np.linspace(0, forward_distance, self.length)
+        
+        return out
     
     
     def rdg(self):
