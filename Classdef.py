@@ -745,7 +745,8 @@ class Env:
 class Track():
     """ Class for getting info on a groundtrack segment
     """
-    def __init__(self, LRS, name, latlim=[-80,-70], lonlim=[0,360], get_missing=False):
+    def __init__(self, LRS, name, latlim=[-80,-70], lonlim=[0,360], 
+                 get_missing=False, relative_shift=False):
         """ Get various parameters defining the dataset
         
         ARGUMENTS
@@ -756,6 +757,12 @@ class Track():
             Name of a SWH file
         latlim: [float, float]
             latitude min/max boundaries
+        latlim: [float, float]
+            longitude min/max boundaries
+        get_missing: binary
+            download missing data (BETA!)
+        relative_shift: binary
+            Whether to try correcting the range delay on sar data to align with swh radargrams
         """
         self.LRS = LRS
         self.latlim = latlim
@@ -799,6 +806,7 @@ class Track():
         # Surface
         self.surface()
         # Range Shift
+        self.relative_shift = relative_shift
         self.range_shift()
         # Radargrams
         self.rdg()
@@ -898,12 +906,15 @@ class Track():
         
         y_constant_shift = np.full(len(y), 400-np.mean(y), dtype=int)
         y_constant_shift_sim = np.full(len(y), -900, dtype=int)
-        y_spline_shift = np.array(y_smooth, dtype=int)-200
+        y_relative_shift = np.array(y_smooth, dtype=int)-200
         
         self.swh['range_shift'] = y_constant_shift
         self.swh_sim['range_shift'] = y_constant_shift_sim
         self.nfoc_sim['range_shift'] = y_constant_shift_sim
-        self.sar05['range_shift'] = y_constant_shift + y_spline_shift
+        if self.relative_shift:
+            self.sar05['range_shift'] = y_constant_shift + y_relative_shift
+        else:
+            self.sar05['range_shift'] = y_constant_shift
         self.sar10['range_shift'] = self.sar05['range_shift']
         #self.sar40['range_shift'] = self.sar05['range_shift']
     

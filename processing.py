@@ -1,12 +1,10 @@
 import numpy as np
 import pandas as pd
 import subradar as sr
-from obspy.core import AttribDict
-from obspy.core import Stats
-from obspy.core import Trace, Stream
-from obspy.io.segy.segy import SEGYBinaryFileHeader
-from obspy.io.segy.segy import SEGYTraceHeader
+from obspy.core import AttribDict, Stats, Trace, Stream
+from obspy.io.segy.segy import SEGYBinaryFileHeader, SEGYTraceHeader
 import scipy.io
+from pyproj import CRS, Transformer
 
 
 def anc(data, **kwargs):
@@ -89,26 +87,59 @@ def sgy(data, **kwargs):
     """ Convert data to segy
     """
 
-    out = Stream()                      # Make a new Stream object, basically an empty list-like thing.
+    # Transfomer to convert lat/lon to XY polar
+    crs_lonlat = '+proj=longlat +R=1737400 +no_defs'
+    crs_stereo = '+proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs +type=crs'
+    transformer = Transformer.from_crs(CRS.from_string(crs_lonlat), 
+                                        CRS.from_proj4(crs_stereo))
+    
+    # Make a new Stream object, basically an empty list-like thing.
+    out = Stream()
+    
+    # Rotate radargram for processing
     rdg = np.float32(data['IMG_pdb'])
     rdg = np.flip( np.rot90(rdg), axis=0)
-    for i, t in enumerate(rdg):                # Loop over all trace-like things in the similarity array.
-        header = {'delta':0.05/1e6, 
-                  'bin':i,
-                  'latitude':data['SUB_SPACECRAFT_LATITUDE'][i],
-                  'longitude':data['SUB_SPACECRAFT_LONGITUDE'][i],
-                  'altitude':data['SPACECRAFT_ALTITUDE'][i],
-                 }          # Make a header for the trace; ObsPy needs this.
-        #for key in data.keys:
-        #    header.update({key:data[key][i]})
-        trace = Trace(t, header=header) # Make the ObsPy Trace with the data and the header.
+    
+    # Loop over all trace-like things in the similarity array.
+    for i, t in enumerate(rdg): 
+        x, y = transformer.transform(data['SUB_SPACECRAFT_LONGITUDE'][i], 
+                                     data['SUB_SPACECRAFT_LATITUDE'][i])
+        
+        trace = Trace(t) # Make the ObsPy Trace with the data 
+        # Add required data.
+        trace.stats.delta = 0.05/1e6
+        trace.stats.starttime = 0  # Not strictly required.
+        # Add yet more to the header (optional).
+        trace.stats.segy = {'trace_header': SEGYTraceHeader()}
+        trace.stats.segy.trace_header.trace_sequence_number_within_line = i + 1
+        trace.stats.segy.trace_header.trace_sequence_number_within_segy_file = i + 1
+        trace.stats.segy.trace_header.ensemble_number = i + 1
+        trace.stats.segy.trace_header.receiver_group_elevation = int(data['SPACECRAFT_ALTITUDE'][i]*1e3)
+        trace.stats.segy.trace_header.ensemble_number = i + 1
+        trace.stats.segy.trace_header.scalar_to_be_applied_to_all_coordinates = 1
+        trace.stats.segy.trace_header.source_coordinate_x = int(x)
+        trace.stats.segy.trace_header.source_coordinate_y = int(y)
+        trace.stats.segy.trace_header.group_coordinate_x = int(x) # same as source positions
+        trace.stats.segy.trace_header.group_coordinate_y = int(y) # same as source positions
+        trace.stats.segy.trace_header.coordinate_units = 1 # 1 = length (meters or feet)
+        trace.stats.segy.trace_header.trace_value_measurement_unit = 1 # 1 = length (meters or feet)
+        trace.stats.segy.trace_header.transduction_units = 1 # 1 = length (meters or feet)
+        trace.stats.segy.trace_header.source_measurement_unit = 1 # 1 = length (meters or feet)
+        trace.stats.segy.trace_header.sample_interval_in_ms_for_this_trace = 16 # ms*10000
+        #trace.stats.segy.number_of_samples_in_this_trace = 0 # Done automatically by ObsPy
+        trace.stats.segy.trace_header.sample_interval_in_ms_for_this_trace = 50
+        trace.stats.segy.trace_header.x_coordinate_of_ensemble_position_of_this_trace = int(x) # Maybe same as source positions
+        trace.stats.segy.trace_header.y_coordinate_of_ensemble_position_of_this_trace = int(y) # Maybe same as source positions
+        
         out.append(trace)               # Append the Trace to the Stream.
         
     # Header
-    header = """JAXA/Lunar Radar Sounder (LRS)
+    header = f"""JAXA/Lunar Radar Sounder (LRS)
     Algorithm: https://github.com/cgrima/lrs/blob/main/processing.py.
     dt = 0.05 s. (along-track sampling)
-    dz =  = 25 m. in void (Range Resolution)""".encode('utf-8')
+    dz = 24 m. in void (Range Resolution)
+    Sample interval within a trace = 160 nanoseconds
+    xy coordinates are derived from southern polar stereographic projection with radius = 1737400 m""".encode('utf-8')
     
     out.stats = Stats(dict(textual_file_header=header))
     
