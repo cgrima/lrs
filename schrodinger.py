@@ -76,7 +76,7 @@ def browse_figure(LRS, swh_name, latlim=[-80,-70], lonlim=[105, 160], cmap='gray
     # --------
     # Get data
     # --------
-    t = :wqClassdef.Track(LRS, swh_name, latlim=latlim, lonlim=lonlim, relative_shift=relative_shift)
+    t = Classdef.Track(LRS, swh_name, latlim=latlim, lonlim=lonlim, relative_shift=relative_shift)
     
     products = [t.swh['product'],
                 t.sar05['product'],
