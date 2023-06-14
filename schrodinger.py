@@ -79,15 +79,15 @@ def browse_figure(LRS, swh_name, latlim=[-80,-70], lonlim=[105, 160], cmap='gray
     t = Classdef.Track(LRS, swh_name, latlim=latlim, lonlim=lonlim, relative_shift=relative_shift)
     
     products = [t.swh['product'],
-                t.sar05['product'],
+                t.sar10['product'],
                 t.nfoc_sim['product'], ]
     
     names = [t.swh['name'],
-             t.sar05['name'],
+             t.sar10['name'],
              t.nfoc_sim['name'], ]
     
     rdgs = [t.swh['rdg'],
-            t.sar05['rdg'],
+            t.sar10['rdg'],
             t.nfoc_sim['rdg'], ]
     
     # Figure
@@ -169,7 +169,8 @@ def browse_figure(LRS, swh_name, latlim=[-80,-70], lonlim=[105, 160], cmap='gray
         axes[products[2]].axvline(x = km_mark*km_sampling, color = 'k', ls = '--', alpha=.5, lw=.5)
         # Markers on map
         idx_mark = int(km_mark*km_sampling)
-        axes['map'].plot(x[idx_mark], y[idx_mark], marker=(2,0,mark_angle), markersize=10, markeredgecolor="w", markerfacecolor="w")
+        axes['map'].plot(x[idx_mark], y[idx_mark], marker=(2,0,mark_angle), 
+                         markersize=10, markeredgecolor="w", markerfacecolor="w")
     
     
     # -------
