@@ -191,6 +191,15 @@ To get the surface echo coordinate and power
 srf = lrs.processing.srf(data, method='mouginot2010')
 ```
 
+or, if the surface files already exists (faster):
+
+```python
+product = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0'
+name = '20071221093226'
+
+srf = LRS.srf_data(product, name, method='grima2012')
+```
+
 The default surface picking method is from Mouginot et al. (2010). Using the one from Grima et al. (2012) is also possible, but it seems to pick the off-nadir echo mor often. However, Mouginot et al. (2010) is more sensitive to an earlier continuous artifact as illustrated below
 
 ```python
