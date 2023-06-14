@@ -194,16 +194,24 @@ srf = lrs.processing.srf(data, method='mouginot2010')
 The default surface picking method is from Mouginot et al. (2010). Using the one from Grima et al. (2012) is also possible, but it seems to pick the off-nadir echo mor often. However, Mouginot et al. (2010) is more sensitive to an earlier continuous artifact as illustrated below
 
 ```python
+# Parameters
+# ----------
+
 product = 'sln-l-lrs-5-sndr-ss-sar05-power-v1.0'
 name = '20071221093226'
 latlim = [10, 20]
 
+# Plot Radargram
+# --------------
+
 img, idx = LRS.plt_rdg(product, name, latlim=latlim, cmap='gray_r', vmin=-10, vmax=40)
 
-srf = lrs.processing.srf(data, method='grima2012')
-plt.plot(srf['y'], label='[Grima et al., 2012]')
+# Plot Surface
+# ------------
 
-srf = lrs.processing.srf(data, method='mouginot2010')
+srf = LRS.srf_data(product, name, method='grima2012')
+plt.plot(srf['y'], label='[Grima et al., 2012]')
+srf = LRS.srf_data(product, name, method='mouginot2010')
 plt.plot(srf['y'], label='[Mouginot et al., 2010]')
 
 plt.legend()
