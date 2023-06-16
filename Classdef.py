@@ -210,7 +210,11 @@ class Env:
             for name in self.files[product].keys():
                 lbl_filenames = [file for file in self.files[product][name] if '.lbl' in file]
                 if lbl_filenames:
-                    lbl_filename = lbl_filenames[0]
+                    try:
+                        lbl_filename = lbl_filenames[0]
+                        logging.error(f'{product}/{name} label file ok')
+                    except:
+                        logging.error(f'{product}/{name} label file is corrupted or non-existent')
                     # Clock
                     lim1 = read.lbl_keyword(lbl_filename, 'START_TIME')
                     lim2 = read.lbl_keyword(lbl_filename, 'STOP_TIME')
