@@ -107,7 +107,7 @@ def sgy(data, **kwargs):
         
         trace = Trace(t) # Make the ObsPy Trace with the data 
         # Add required data.
-        trace.stats.delta = 0.05/1e6
+        trace.stats.delta = 0.0015#0.05/1e6
         trace.stats.starttime = 0  # Not strictly required.
         # Add yet more to the header (optional).
         trace.stats.segy = {'trace_header': SEGYTraceHeader()}
@@ -125,7 +125,7 @@ def sgy(data, **kwargs):
         trace.stats.segy.trace_header.trace_value_measurement_unit = 1 # 1 = length (meters or feet)
         trace.stats.segy.trace_header.transduction_units = 1 # 1 = length (meters or feet)
         trace.stats.segy.trace_header.source_measurement_unit = 1 # 1 = length (meters or feet)
-        trace.stats.segy.trace_header.sample_interval_in_ms_for_this_trace = 16 # ms*10000
+        trace.stats.segy.trace_header.sample_interval_in_ms_for_this_trace = 1.6 # ms*10000
         #trace.stats.segy.number_of_samples_in_this_trace = 0 # Done automatically by ObsPy
         trace.stats.segy.trace_header.sample_interval_in_ms_for_this_trace = 50
         trace.stats.segy.trace_header.x_coordinate_of_ensemble_position_of_this_trace = int(x) # Maybe same as source positions
