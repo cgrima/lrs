@@ -212,7 +212,6 @@ class Env:
                 if lbl_filenames:
                     try:
                         lbl_filename = lbl_filenames[0]
-                        logging.error(f'{product}/{name} label file ok')
                     except:
                         logging.error(f'{product}/{name} label file is corrupted or non-existent')
                     # Clock
