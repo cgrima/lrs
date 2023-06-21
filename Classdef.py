@@ -405,8 +405,15 @@ class Env:
         poly = Polygon(box)
 
         products = copy.deepcopy(self.index_products())
-        products.remove('sln-l-lrs-5-sndr-ss-nfoc-power-v1.0')
+        
+        # Remove nfoc if present
+        try:
+            products.remove('sln-l-lrs-5-sndr-ss-nfoc-power-v1.0')
+        except:
+            pass
+        
         out = []
+        
         for product in products:
             for track in self.files[product].keys():
                 coord = tools.intermediate_latlon(self.lat_lim[product][track],
