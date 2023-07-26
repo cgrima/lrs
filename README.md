@@ -132,6 +132,16 @@ cd data/orig
 lftp -c "open https://data.darts.isas.jaxa.jp/pub/pds3; mirror -c -P 10 --only-missing -I 'LRS_SAR05KM_20071221093226*' sln-l-lrs-5-sndr-ss-sar05-power-v1.0/"
 ```
 
+### SPICE Kernels
+
+The Selene SPICE kernels might necessay to gather some additional metadata about the spacecraft. In the terminal, you can download them, for example using `lftp`. The kernels need to be placed in the `./data/orig` folder. Once in this folder, type
+
+```bash
+lftp -c 'mirror --parallel=10 https://data.darts.isas.jaxa.jp/pub/spice/SELENE/kernels/ ;exit'
+```
+
+This will create a `./data/orig/kernels` folder. It might take a while to download.
+
 
 ## Basic Data Info from Label Files
 
