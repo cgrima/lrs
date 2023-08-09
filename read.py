@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import spiceypy as spice
 import os
+import logging
 
 
 def lbl_keyword(lbl_filename, keyword, fullline=False):
@@ -124,14 +125,18 @@ def spice_kernels(UTCs, kernels_path = ['..', 'data', 'orig', 'kernels']):
     # Load Kernels
     # ------------
     
-    spice.furnsh(os.path.join(*kernels_path, 'lsk', 'naif0009.tls'))
-    spice.furnsh(os.path.join(*kernels_path, 'ck', 'SEL_M_ALL_D_V03.BC'))
-    spice.furnsh(os.path.join(*kernels_path, 'spk', 'SEL_M_071020_090610_SGMH_02.BSP'))
-    spice.furnsh(os.path.join(*kernels_path, 'fk', 'SEL_V01.TF'))
-    spice.furnsh(os.path.join(*kernels_path, 'fk', 'moon_080317.tf'))
-    spice.furnsh(os.path.join(*kernels_path, 'pck', 'moon_pa_de421_1900-2050.bpc'))
-    spice.furnsh(os.path.join(*kernels_path, 'pck', 'pck00010.tpc'))
-    spice.furnsh(os.path.join(*kernels_path, 'sclk', 'SEL_M_V01.TSC'))
+    try:
+        spice.furnsh(os.path.join(*kernels_path, 'lsk', 'naif0009.tls'))
+        spice.furnsh(os.path.join(*kernels_path, 'ck', 'SEL_M_ALL_D_V03.BC'))
+        spice.furnsh(os.path.join(*kernels_path, 'spk', 'SEL_M_071020_090610_SGMH_02.BSP'))
+        spice.furnsh(os.path.join(*kernels_path, 'fk', 'SEL_V01.TF'))
+        spice.furnsh(os.path.join(*kernels_path, 'fk', 'moon_080317.tf'))
+        spice.furnsh(os.path.join(*kernels_path, 'pck', 'moon_pa_de421_1900-2050.bpc'))
+        spice.furnsh(os.path.join(*kernels_path, 'pck', 'pck00010.tpc'))
+        spice.furnsh(os.path.join(*kernels_path, 'sclk', 'SEL_M_V01.TSC'))
+    except:
+        logging.warning('Kernel files were not found')
+        return None
 
     # Data adjustments
     # ----------------
