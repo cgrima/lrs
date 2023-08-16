@@ -5,6 +5,8 @@ from obspy.core import AttribDict, Stats, Trace, Stream
 from obspy.io.segy.segy import SEGYBinaryFileHeader, SEGYTraceHeader
 import scipy.io
 from pyproj import CRS, Transformer
+from . import read
+
 
 
 def anc(data, **kwargs):
@@ -29,7 +31,12 @@ def anc(data, **kwargs):
         df['range0'] = data['DISTANCE_TO_RANGE0']
     else:
         df['range0'] = np.zeros(len(data['OBSERVATION_TIME']))
-    
+        
+    # Get data from kernels
+    kernels = read.spice_kernels(list(df['date']))
+    for key in kernels.keys():
+        df[key] = kernels[key]
+        
     return df
 
 
