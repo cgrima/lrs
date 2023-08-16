@@ -215,6 +215,7 @@ class Env:
                     except:
                         logging.error(f'{product}/{name} label file is corrupted or non-existent')
                     # Clock
+                    print(lbl_filename)
                     lim1 = read.lbl_keyword(lbl_filename, 'START_TIME')
                     lim2 = read.lbl_keyword(lbl_filename, 'STOP_TIME')
                     self.clock_lim[product][name] = [lim1, lim2]
@@ -350,7 +351,7 @@ class Env:
     
     
     def matching_track(self, product1, name1, product2):
-        """ Give the name of a trach overlaping a track from another product
+        """ Give the name of a track overlaping a track from another product
         
         ARGUMENT
         --------
