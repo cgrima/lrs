@@ -259,7 +259,16 @@ class Env:
             anc, img = read.img(img_filename, lbl_filename)
             out = anc.to_dict(orient='list')
             out.update({'IMG':img})
-            out.update({'IMG_pdb':self.signalconversion(product, name, img)})
+            # Gain Correction    
+            line = read.lbl_keyword(lbl_filename, 'Pmax', fullline=True)
+            Pmax = float(line.split(' P')[1][:-1].split(' = ')[-1])
+            Pmin = float(line.split(' P')[2][:-1].split(' = ')[-1])
+            pdb = (255-img)*(Pmax-Pmin)/255+Pmin
+            out.update({'Pmax':Pmax})
+            out.update({'Pmin':Pmin})
+            out.update({'IMG_pdb':pdb})
+            
+            
             return out#.update({'DATA':img})
         else:
             logging.warning('No orig data for ' + product + ' ' + name)
@@ -626,7 +635,8 @@ class Env:
 
     
     def signalconversion(self, product, name, dn, calval=0):
-        """ Convert the orig LRS signal to power. Note that the coefficients 
+        """ !!! DEPRECATED !!! 
+        Convert the orig LRS signal to power. Note that the coefficients 
         of conversion varies for each processing and track. The coefficients 
         are extracted from the lbl files.
     
