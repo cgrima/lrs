@@ -123,9 +123,12 @@ class Env:
         if not glob.glob(local_file) or delete:
             os.makedirs(os.path.join(self.orig_path, product, name[:8], 'data'), exist_ok=True)
             response = requests.get(remote_file)
-            open(local_file, "wb").write(response.content)
-            #_ = urllib.request.urlretrieve(remote_file, local_file)
-            logging.info(' ' + local_file + ' DOWNLOADED')
+            if response.status_code == 200:
+                open(local_file, "wb").write(response.content)
+                logging.info(' ' + local_file + ' DOWNLOADED')
+            else:
+                logging.info(' ' + remote_file + f' DOES NOT EXIST (Error {response.status_code})')
+                
         else:
             logging.info(' ' + local_file + ' EXISTS (NOT DOWNLOADED)')
             
