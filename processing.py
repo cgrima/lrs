@@ -5,6 +5,7 @@ from obspy.core import AttribDict, Stats, Trace, Stream
 from obspy.io.segy.segy import SEGYBinaryFileHeader, SEGYTraceHeader
 import scipy.io
 from pyproj import CRS, Transformer
+from datetime import datetime
 from . import read
 
 
@@ -18,8 +19,19 @@ def anc(data, **kwargs):
         Classdef.Env.orig_data()
     """
     df = pd.DataFrame()
-    dates = data['OBSERVATION_TIME']
-    df['date'] = [str(date)[2:-1] for date in dates]
+    df['date'] = [str(date)[2:-1] for date in data['OBSERVATION_TIME']]
+    dates = df['date'].values
+    
+    # Fill empty 'OBSERVATION_TIME' with interpolated value
+    no_date_index = df['date'][df['date'].str.contains(' ')].index.values
+    date_index = df['date'][~df['date'].str.contains(' ', na=False)].index.values
+    if len(no_date_index) > 0:    
+        dates = df['date'].values
+        date_timestamps = [datetime.fromisoformat(date).timestamp() for date in dates[date_index]]
+        no_date_timestamps = np.interp(no_date_index, date_index, date_timestamps)
+        no_date_dates = [datetime.fromtimestamp(no_date_timestamp).isoformat()[:-3] for no_date_timestamp in no_date_timestamps]
+        df['date'][no_date_index] = no_date_dates
+    
     df['time'] = [''.join(''.join(''.join(
                   d.split('.')[0].split('T')).split('-')).split(':')) 
                   for d in df['date']]
