@@ -26,6 +26,7 @@ from pyproj import Transformer
 import matplotlib.pyplot as plt
 from . import read, tools, processing
 
+
 class Env:
     """ Class for interacting with data files in the dataset
     """
@@ -71,6 +72,7 @@ class Env:
         
         out = list(set(out)) # unique products
         return out
+        
         
     def product_match(self, product):
         """ Return the full name of a product from a substring
@@ -146,6 +148,8 @@ class Env:
             middle_name = 'SAR10KM'
         if product == 'sln-l-lrs-5-sndr-ss-sar40-power-v1.0':
             middle_name = 'SAR40KM'
+        if product == 'sln-l-lrs-5-sndr-ss-nfoc-power-v1.0':
+            middle_name = 'NFOC'
             
         filename = '_'.join(['LRS', middle_name, name])
         return filename
@@ -355,7 +359,13 @@ class Env:
         sim_filenames = [file for file in files if os.path.join('sim','') in file]
         
         if sim_filenames:
-            out = np.loadtxt(sim_filenames[0], delimiter=",", dtype='float')
+            if product == 'sln-l-lrs-5-sndr-ss-nfoc-power-v1.0':
+                orig_product = 'sln-l-lrs-5-sndr-ss-high-v2.0'
+            else:
+                orig_product = product
+            out = self.orig_data(orig_product, name)
+            # Replace with simulation files 
+            out['IMG_pdb'] = np.loadtxt(sim_filenames[0], delimiter=",", dtype='float')
             return out
         else:
             logging.warning('No sim data for ' + product + ' ' + name)
@@ -455,7 +465,7 @@ class Env:
         return out
         
         
-    def run(self, process, product, name, archive=True, delete=False, 
+    def run(self, process, product, name, source='orig', archive=True, delete=False,
             **kwargs):
         """ Run a process
         
@@ -467,6 +477,8 @@ class Env:
             product full name or substring (e.g., sar05)
         name: string
             file identifier (e.g., '20071221033918')
+        source: string ('orig' or 'sim')
+            source of the input data
         archive: binary
             whether to archive
         delete: bit
@@ -477,14 +489,19 @@ class Env:
         results
         
         """
-        product = self.product_match(product)
+        product = self.product_match(product, **kwargs)
+        
+        if source == 'orig':
+            data = self.orig_data(product, name)
+        elif source == 'sim':
+            data = self.sim_data(product, name, **kwargs)
         
         # ARCHIVE NAME
         # ------------
         
         if process == 'anc':
             method = None
-            data = self.orig_data(product, name)
+            #data = self.orig_data(product, name)
             archive_path = os.path.join(self.xtra_path, process, product, 
                                                      name[:8] ,'data')
             suffix = '_orig.txt'
@@ -498,7 +515,7 @@ class Env:
             else:
                 logging.warning('You need to define a method for processing.srf(). Default is mouginot2010')
                 method = 'mouginot2010'
-            data = self.orig_data(product, name)
+            #data = self.orig_data(product, name)
             archive_path = os.path.join(self.xtra_path, process, product, 
                                                      name[:8] ,'data')
             suffix = f'_{method}.txt'
@@ -507,11 +524,15 @@ class Env:
             archive_fullname = os.path.join(archive_path, filename)
         
         if process == 'sgy':
-            method = None
-            data = self.orig_data(product, name)
+            if 'method' in kwargs:
+                method = kwargs['method']
+            else:
+                logging.warning('You need to define a method for processing.srf(). Default is gerekos2018')
+                method = 'gerekos2018'
+            #data = self.orig_data(product, name)
             archive_path = os.path.join(self.xtra_path, process, product, 
                                                      name[:8] ,'data')
-            suffix = '_orig.sgy'
+            suffix = f'_{method}.sgy'
             filename = self.filename_root(product, name) + suffix
             
             archive_fullname = os.path.join(archive_path, filename)

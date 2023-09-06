@@ -38,8 +38,8 @@ def simulation_integration(LRS, mat_filename, archive=False, delete=False):
     archive_path_RCPWR = os.path.join(LRS.xtra_path, 'sim', 'sln-l-lrs-5-sndr-ss-high-v2.0', name[:8] ,'data')
     archive_path_FCPWR = os.path.join(LRS.xtra_path, 'sim', 'sln-l-lrs-5-sndr-ss-nfoc-power-v1.0', name[:8] ,'data')
     
-    archive_fullname_RCPWR = os.path.join(archive_path_RCPWR, f'LRS_SIM_{name}_gerekos2018.csv')
-    archive_fullname_FCPWR = os.path.join(archive_path_FCPWR, f'LRS_SIM_{name}_gerekos2018.csv')
+    archive_fullname_RCPWR = os.path.join(archive_path_RCPWR, f'LRS_SWH_RV20_{name}_gerekos2018.csv')
+    archive_fullname_FCPWR = os.path.join(archive_path_FCPWR, f'LRS_NFOC_{name}_gerekos2018.csv')
     
     if archive:
         # RCPWR
