@@ -489,7 +489,7 @@ class Env:
         results
         
         """
-        product = self.product_match(product, **kwargs)
+        product = self.product_match(product)
         
         if source == 'orig':
             data = self.orig_data(product, name)
