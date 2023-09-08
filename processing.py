@@ -104,7 +104,7 @@ def srf(data, method='mouginot2010', **kwargs):
     return df
 
 
-def sgy(data, method='gerekos2018',**kwargs):
+def sgy(data, **kwargs):
     """ Convert data to segy
     """
 

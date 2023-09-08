@@ -368,7 +368,7 @@ class Env:
             out['IMG_pdb'] = np.loadtxt(sim_filenames[0], delimiter=",", dtype='float')
             return out
         else:
-            logging.warning('No sim data for ' + product + ' ' + name)
+            logging.warning(f'No sim data for {product} {name} {method}')
     
     
     def matching_track(self, product1, name1, product2):
@@ -465,8 +465,7 @@ class Env:
         return out
         
         
-    def run(self, process, product, name, source='orig', archive=True, delete=False,
-            **kwargs):
+    def run(self, process, product, name, source='orig', archive=True, delete=False, method=None):
         """ Run a process
         
         ARGUMENT
@@ -489,54 +488,35 @@ class Env:
         results
         
         """
+        # GET DATA
+        # --------
         product = self.product_match(product)
         
         if source == 'orig':
             data = self.orig_data(product, name)
         elif source == 'sim':
-            data = self.sim_data(product, name, **kwargs)
+            data = self.sim_data(product, name, method=method)
         
         # ARCHIVE NAME
         # ------------
         
         if process == 'anc':
-            method = None
-            #data = self.orig_data(product, name)
-            archive_path = os.path.join(self.xtra_path, process, product, 
-                                                     name[:8] ,'data')
-            suffix = '_orig.txt'
-            filename = self.filename_root(product, name) + suffix
-            
-            archive_fullname = os.path.join(archive_path, filename)
+            archive_path = os.path.join(self.xtra_path, process, product, name[:8] ,'data')
+            filename = self.filename_root(product, name) + '_orig.txt'
             
         if process == 'srf':
-            if 'method' in kwargs:
-                method = kwargs['method']
-            else:
-                logging.warning('You need to define a method for processing.srf(). Default is mouginot2010')
+            if not 'method':
                 method = 'mouginot2010'
-            #data = self.orig_data(product, name)
-            archive_path = os.path.join(self.xtra_path, process, product, 
-                                                     name[:8] ,'data')
-            suffix = f'_{method}.txt'
-            filename = self.filename_root(product, name) + suffix
-            
-            archive_fullname = os.path.join(archive_path, filename)
+            archive_path = os.path.join(self.xtra_path, process, product, name[:8] ,'data')
+            filename = self.filename_root(product, name) + f'_{method}.txt'
         
         if process == 'sgy':
-            if 'method' in kwargs:
-                method = kwargs['method']
-            else:
-                logging.warning('You need to define a method for processing.srf(). Default is gerekos2018')
-                method = 'gerekos2018'
-            #data = self.orig_data(product, name)
-            archive_path = os.path.join(self.xtra_path, process, product, 
-                                                     name[:8] ,'data')
-            suffix = f'_{method}.sgy'
-            filename = self.filename_root(product, name) + suffix
+            if source == 'sim':
+                source = method
+            archive_path = os.path.join(self.xtra_path, process, product, name[:8] ,'data')
+            filename = self.filename_root(product, name) + f'_{source}.sgy'
             
-            archive_fullname = os.path.join(archive_path, filename)
-            
+        archive_fullname = os.path.join(archive_path, filename)
         
         # RUN PROCESS
         #------------
@@ -544,6 +524,7 @@ class Env:
         try:
             result = getattr(processing, process)(data, method=method)
         except:
+            logging.warning(f'Exception for {process} {product} {name}')
             result = []
         else:
             # ARCHIVE
