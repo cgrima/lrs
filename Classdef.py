@@ -114,7 +114,9 @@ class Env:
         
         RETURN
         ------
-        Path to the local filename downloaded
+        0 = File has not been downloaded
+        1 = File has been downloaded
+        2 = File has been localy deleted
         
         """
         #filename = 'LRS_' + product.split('-')[6].upper() + 'KM_' + name + '.' + typ6 
@@ -130,18 +132,21 @@ class Env:
             response = requests.get(remote_file)
             if response.status_code == 200:
                 open(local_file, "wb").write(response.content)
-                logging.info(' ' + local_file + ' DOWNLOADED')
+                out_code = 1
+                logging.info(f' [{out_code}] {local_file} DOWNLOADED')
             else:
                 logging.info(' ' + remote_file + f' DOES NOT EXIST (Error {response.status_code})')
         elif delete_only == True:
             # Erase local file only
             os.remove(local_file)
-            logging.info(' ' + local_file + ' DELETED')
+            out_code = 2
+            logging.info(f' [{out_code}] {local_file} DELETED')
         else:
             # Do not do anything
-            logging.info(' ' + local_file + ' EXISTS (NOT DOWNLOADED)')
+            out_code = 0
+            logging.info(f' [{out_code}] {local_file} EXISTS (NOT DOWNLOADED)')
             
-        return local_file
+        return out_code
     
     
     def filename_root(self, product, name):
