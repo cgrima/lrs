@@ -154,7 +154,7 @@ def sgy(data, **kwargs):
         
         out.append(trace)               # Append the Trace to the Stream.
         
-    # Header
+    # Textual Header
     header = f"""JAXA/Lunar Radar Sounder (LRS)
     Algorithm: https://github.com/cgrima/lrs/blob/main/processing.py.
     dt = 0.05 s. (along-track sampling)
@@ -163,5 +163,9 @@ def sgy(data, **kwargs):
     xy coordinates are derived from southern polar stereographic projection with radius = 1737400 m""".encode('utf-8')
     
     out.stats = Stats(dict(textual_file_header=header))
+    
+    # Binary File header    
+    out.stats.binary_file_header = SEGYBinaryFileHeader()
+    out.stats.binary_file_header.number_of_data_traces_per_ensemble = 1 # Prevent Obspy autocreate this field with > 32767
     
     return out
