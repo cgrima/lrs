@@ -96,7 +96,7 @@ class Env:
             return res[0]
 
         
-    def download(self, product, name, typ='lbl', delete=False):
+    def download(self, product, name, typ='lbl', delete=False, delete_only=False):
         """ Download original data for a given product and name
         
         ARGUMENTS
@@ -109,6 +109,8 @@ class Env:
             File extension (lbl or img)
         delete: binary
             whether to delete existing local file
+        delete_only: string
+            delete the local file
         
         RETURN
         ------
@@ -123,6 +125,7 @@ class Env:
         local_file = os.path.join(self.orig_path, product, name[:8], 'data', filename)
         
         if not glob.glob(local_file) or delete:
+            # Download file
             os.makedirs(os.path.join(self.orig_path, product, name[:8], 'data'), exist_ok=True)
             response = requests.get(remote_file)
             if response.status_code == 200:
@@ -130,8 +133,12 @@ class Env:
                 logging.info(' ' + local_file + ' DOWNLOADED')
             else:
                 logging.info(' ' + remote_file + f' DOES NOT EXIST (Error {response.status_code})')
-                
+        elif delete_only == True:
+            # Erase local file only
+            os.remove(local_file)
+            logging.info(' ' + local_file + ' DELETED')
         else:
+            # Do not do anything
             logging.info(' ' + local_file + ' EXISTS (NOT DOWNLOADED)')
             
         return local_file
