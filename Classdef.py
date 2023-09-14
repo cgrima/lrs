@@ -477,7 +477,8 @@ class Env:
         return out
         
         
-    def run(self, process, product, name, source='orig', archive=True, delete=False, method=None):
+    def run(self, process, product, name, source='orig', archive=True, delete=False, method=None,
+            non_standard_archive_path=None, **kwargs):
         """ Run a process
         
         ARGUMENT
@@ -494,6 +495,8 @@ class Env:
             whether to archive
         delete: bit
             Force archive if file already exist
+        non_standard_archive_path: string
+            The archive path name if you do not wish to archive in the standard hierarchy
             
         RETURN
         ------
@@ -528,13 +531,16 @@ class Env:
             archive_path = os.path.join(self.xtra_path, process, product, name[:8] ,'data')
             filename = self.filename_root(product, name) + f'_{source}.sgy'
             
+        if non_standard_archive_path:
+            archive_path = non_standard_archive_path
+            
         archive_fullname = os.path.join(archive_path, filename)
         
         # RUN PROCESS
         #------------
         
         try:
-            result = getattr(processing, process)(data, method=method)
+            result = getattr(processing, process)(data, method=method, **kwargs)
         except:
             logging.warning(f'Exception for {process} {product} {name}')
             result = []

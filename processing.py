@@ -104,15 +104,18 @@ def srf(data, method='mouginot2010', **kwargs):
     return df
 
 
-def sgy(data, **kwargs):
+def sgy(data, xy_projection='south_stereo', xlim=[-1e7,1e7], ylim=[-1e7,1e7], **kwargs):
     """ Convert data to segy
+    xy_projetion is the projection to determine x and y coordinates
+    xlim and ylim are the limit coordinates for where the segy should be cropped
     """
 
     # Transfomer to convert lat/lon to XY polar
-    crs_lonlat = '+proj=longlat +R=1737400 +no_defs'
-    crs_stereo = '+proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs +type=crs'
-    transformer = Transformer.from_crs(CRS.from_string(crs_lonlat), 
-                                        CRS.from_proj4(crs_stereo))
+    if xy_projection == 'south_stereo':
+        crs_lonlat = '+proj=longlat +R=1737400 +no_defs'
+        crs_stereo = '+proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs +type=crs'
+        transformer = Transformer.from_crs(CRS.from_string(crs_lonlat), 
+                                            CRS.from_proj4(crs_stereo))
     
     # Make a new Stream object, basically an empty list-like thing.
     out = Stream()
@@ -126,33 +129,35 @@ def sgy(data, **kwargs):
         x, y = transformer.transform(data['SUB_SPACECRAFT_LONGITUDE'][i], 
                                      data['SUB_SPACECRAFT_LATITUDE'][i])
         
-        trace = Trace(t) # Make the ObsPy Trace with the data 
-        # Add required data.
-        trace.stats.delta = 0.0015#0.05/1e6
-        trace.stats.starttime = 0  # Not strictly required.
-        # Add yet more to the header (optional).
-        trace.stats.segy = {'trace_header': SEGYTraceHeader()}
-        trace.stats.segy.trace_header.trace_sequence_number_within_line = i + 1
-        trace.stats.segy.trace_header.trace_sequence_number_within_segy_file = i + 1
-        trace.stats.segy.trace_header.ensemble_number = i + 1
-        trace.stats.segy.trace_header.receiver_group_elevation = int(data['SPACECRAFT_ALTITUDE'][i]*1e3)
-        trace.stats.segy.trace_header.ensemble_number = i + 1
-        trace.stats.segy.trace_header.scalar_to_be_applied_to_all_coordinates = 1
-        trace.stats.segy.trace_header.source_coordinate_x = int(x)
-        trace.stats.segy.trace_header.source_coordinate_y = int(y)
-        trace.stats.segy.trace_header.group_coordinate_x = int(x) # same as source positions
-        trace.stats.segy.trace_header.group_coordinate_y = int(y) # same as source positions
-        trace.stats.segy.trace_header.coordinate_units = 1 # 1 = length (meters or feet)
-        trace.stats.segy.trace_header.trace_value_measurement_unit = 1 # 1 = length (meters or feet)
-        trace.stats.segy.trace_header.transduction_units = 1 # 1 = length (meters or feet)
-        trace.stats.segy.trace_header.source_measurement_unit = 1 # 1 = length (meters or feet)
-        trace.stats.segy.trace_header.sample_interval_in_ms_for_this_trace = 1.6 # ms*10000
-        #trace.stats.segy.number_of_samples_in_this_trace = 0 # Done automatically by ObsPy
-        trace.stats.segy.trace_header.sample_interval_in_ms_for_this_trace = 50
-        trace.stats.segy.trace_header.x_coordinate_of_ensemble_position_of_this_trace = int(x) # Maybe same as source positions
-        trace.stats.segy.trace_header.y_coordinate_of_ensemble_position_of_this_trace = int(y) # Maybe same as source positions
+        if (x > xlim[0]) and (x < xlim[1]) and (y > ylim[0]) and (y < ylim[1]): 
+            trace = Trace(t) # Make the ObsPy Trace with the data 
+            # Add required data.
+            trace.stats.delta = 0.0015#0.05/1e6
+            trace.stats.starttime = 0  # Not strictly required.
+            # Add yet more to the header (optional).
+            trace.stats.segy = {'trace_header': SEGYTraceHeader()}
+            trace.stats.segy.trace_header.trace_sequence_number_within_line = i + 1
+            trace.stats.segy.trace_header.trace_sequence_number_within_segy_file = i + 1
+            trace.stats.segy.trace_header.ensemble_number = i + 1
+            trace.stats.segy.trace_header.receiver_group_elevation = int(data['SPACECRAFT_ALTITUDE'][i]*1e3)
+            trace.stats.segy.trace_header.ensemble_number = i + 1
+            trace.stats.segy.trace_header.scalar_to_be_applied_to_all_coordinates = 1
+            trace.stats.segy.trace_header.source_coordinate_x = int(x)
+            trace.stats.segy.trace_header.source_coordinate_y = int(y)
+            trace.stats.segy.trace_header.group_coordinate_x = int(x) # same as source positions
+            trace.stats.segy.trace_header.group_coordinate_y = int(y) # same as source positions
+            trace.stats.segy.trace_header.coordinate_units = 1 # 1 = length (meters or feet)
+            trace.stats.segy.trace_header.trace_value_measurement_unit = 1 # 1 = length (meters or feet)
+            trace.stats.segy.trace_header.transduction_units = 1 # 1 = length (meters or feet)
+            trace.stats.segy.trace_header.source_measurement_unit = 1 # 1 = length (meters or feet)
+            trace.stats.segy.trace_header.sample_interval_in_ms_for_this_trace = 1.6 # ms*10000
+            #trace.stats.segy.number_of_samples_in_this_trace = 0 # Done automatically by ObsPy
+            trace.stats.segy.trace_header.sample_interval_in_ms_for_this_trace = 50
+            trace.stats.segy.trace_header.x_coordinate_of_ensemble_position_of_this_trace = int(x) # Maybe same as source positions
+            trace.stats.segy.trace_header.y_coordinate_of_ensemble_position_of_this_trace = int(y) # Maybe same as source positions
         
-        out.append(trace)               # Append the Trace to the Stream.
+            if trace:
+                out.append(trace)               # Append the Trace to the Stream.
         
     # Textual Header
     header = f"""JAXA/Lunar Radar Sounder (LRS)
