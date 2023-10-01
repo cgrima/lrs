@@ -127,7 +127,7 @@ def spice_kernels(UTCs, kernels_path = ['..', 'data', 'orig', 'kernels']):
     
     try:
         spice.furnsh(os.path.join(*kernels_path, 'lsk', 'naif0009.tls'))
-        spice.furnsh(os.path.join(*kernels_path, 'ck', 'SEL_M_ALL_D_V03.BC'))
+        spice.furnsh(os.path.join(*kernels_path, 'ck', 'SEL_M_ALL_S_V03.BC'))
         spice.furnsh(os.path.join(*kernels_path, 'spk', 'SEL_M_071020_090610_SGMH_02.BSP'))
         spice.furnsh(os.path.join(*kernels_path, 'fk', 'SEL_V01.TF'))
         spice.furnsh(os.path.join(*kernels_path, 'fk', 'moon_080317.tf'))
@@ -165,20 +165,26 @@ def spice_kernels(UTCs, kernels_path = ['..', 'data', 'orig', 'kernels']):
     # ---------------------------------
 
     # Rotation Matrices
-    rotMats = [spice.ckgp(-131000, SCLK, 10, 'MOON_ME')[0] for SCLK in SCLKs]
+    try:
+        rotMats = [spice.ckgp(-131000, SCLK, 10, 'MOON_ME')[0] for SCLK in SCLKs]
 
-    # Get the body-fixed frame transformation matrix from the reference frame
-    ref2bodyMats = [spice.pxform('MOON_ME', 'SELENE_M_SPACECRAFT', ET) for ET in ETs]
+        # Get the body-fixed frame transformation matrix from the reference frame
+        ref2bodyMats = [spice.pxform('MOON_ME', 'SELENE_M_SPACECRAFT', ET) for ET in ETs]
 
-    # Apply the inverse of the body-fixed frame transformation to get the attitude in the body-fixed frame
-    body_fixed_attitudes = [np.matmul(np.linalg.inv(ref2bodyMats[i]), rotMats[i]) for i in np.arange(len(ETs))]
+        # Apply the inverse of the body-fixed frame transformation to get the attitude in the body-fixed frame
+        body_fixed_attitudes = [np.matmul(np.linalg.inv(ref2bodyMats[i]), rotMats[i]) for i in np.arange(len(ETs))]
 
-    # Extract the roll, pitch, and yaw angles from the body-fixed attitude matrix
-    attitudes = [spice.m2eul(body_fixed_attitude, 3, 2, 1) for body_fixed_attitude in body_fixed_attitudes]
+        # Extract the roll, pitch, and yaw angles from the body-fixed attitude matrix
+        attitudes = [spice.m2eul(body_fixed_attitude, 3, 2, 1) for body_fixed_attitude in body_fixed_attitudes]
 
-    roll = [np.rad2deg(euler[0]) for euler in attitudes]
-    pitch = [np.rad2deg(euler[1]) for euler in attitudes]
-    yaw = [np.rad2deg(euler[2]) for euler in attitudes]
+        roll = [np.rad2deg(euler[0]) for euler in attitudes]
+        pitch = [np.rad2deg(euler[1]) for euler in attitudes]
+        yaw = [np.rad2deg(euler[2]) for euler in attitudes]
+        
+    except:
+        roll = list(np.array(x)*0+555)
+        pitch = list(np.array(x)*0+555)
+        yaw = list(np.array(x)*0+555)
 
     # Clean up the kernels
     # --------------------
